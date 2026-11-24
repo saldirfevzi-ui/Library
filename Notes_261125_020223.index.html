@@ -1,0 +1,3456 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kütüphane Defteri" />
+<meta name="application-name" content="Kütüphane Defteri" />
+<title>Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi</title>
+<!-- Özel Kitap ve Ayraç SVG İkonu -->
+<link id="appFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f172a'/%3E%3Crect x='24' y='24' width='464' height='464' rx='92' fill='none' stroke='%230284c7' stroke-width='10' stroke-opacity='0.45'/%3E%3Crect x='118' y='88' width='276' height='336' rx='24' fill='%230284c7'/%3E%3Crect x='118' y='88' width='42' height='336' rx='12' fill='%230369a1'/%3E%3Crect x='178' y='132' width='180' height='74' rx='12' fill='%23ffffff'/%3E%3Cline x1='200' y1='158' x2='336' y2='158' stroke='%230f172a' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='200' y1='182' x2='296' y2='182' stroke='%2364748b' stroke-width='10' stroke-linecap='round'/%3E%3Cpath d='M304 88 L356 88 L356 264 L330 242 L304 264 Z' fill='%23f59e0b'/%3E%3C/svg%3E" />
+<link id="appTouchIcon" rel="apple-touch-icon" href="" />
+<link id="pwaManifestLink" rel="manifest" href="" />
+<style>
+/* Temel Renk Değişkenleri ve Sıfırlama */
+:root {
+--bg: #f1f5f9;
+--card: #ffffff;
+--text: #0f172a;
+--muted: #64748b;
+--line: #e2e8f0;
+--primary: #0369a1;
+--primary-dark: #075985;
+--primary-soft: #e0f2fe;
+--ok: #15803d;
+--ok-bg: #dcfce7;
+--warn: #b45309;
+--warn-bg: #fef3c7;
+--bad: #b91c1c;
+--bad-bg: #fee2e2;
+--radius: 14px;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+-webkit-tap-highlight-color: transparent;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+background: var(--bg);
+color: var(--text);
+line-height: 1.45;
+padding-bottom: 56px;
+}
+
+/* Üst Başlık */
+.topbar {
+background: #0f172a;
+color: #ffffff;
+padding: 14px 16px;
+position: sticky;
+top: 0;
+z-index: 30;
+box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+}
+
+.topbar-inner {
+max-width: 900px;
+margin: 0 auto;
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 12px;
+flex-wrap: wrap;
+}
+
+.brand-wrap {
+display: flex;
+align-items: center;
+gap: 11px;
+}
+
+.brand-icon {
+width: 42px;
+height: 42px;
+border-radius: 11px;
+background: #1e293b;
+border: 1px solid rgba(255, 255, 255, 0.16);
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+}
+
+.lib-title {
+font-size: 1.02rem;
+font-weight: 700;
+line-height: 1.25;
+}
+
+.lib-sub {
+font-size: 0.77rem;
+color: #cbd5e1;
+margin-top: 2px;
+}
+
+.badge-local {
+background: rgba(255, 255, 255, 0.12);
+border: 1px solid rgba(255, 255, 255, 0.22);
+color: #e2e8f0;
+font-size: 0.73rem;
+padding: 5px 10px;
+border-radius: 999px;
+white-space: nowrap;
+}
+
+.container {
+max-width: 900px;
+margin: 14px auto 0;
+padding: 0 14px;
+}
+
+/* 5 Sekmeli Ana Navigasyon */
+.nav-tabs {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 6px;
+margin-bottom: 14px;
+}
+
+@media (max-width: 680px) {
+.nav-tabs {
+grid-template-columns: repeat(3, 1fr);
+}
+}
+
+@media (max-width: 410px) {
+.nav-tabs {
+grid-template-columns: repeat(2, 1fr);
+}
+}
+
+.tab-btn {
+background: var(--card);
+color: var(--text);
+border: 1px solid var(--line);
+border-radius: 12px;
+padding: 11px 8px;
+font-size: 0.85rem;
+font-weight: 700;
+cursor: pointer;
+transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+background: var(--primary);
+color: #ffffff;
+border-color: var(--primary);
+}
+
+.panel {
+display: none;
+}
+
+.panel.active {
+display: block;
+}
+
+.card {
+background: var(--card);
+border: 1px solid var(--line);
+border-radius: var(--radius);
+padding: 14px;
+margin-bottom: 12px;
+box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.card-title {
+font-size: 0.98rem;
+font-weight: 700;
+margin-bottom: 10px;
+}
+
+/* İstatistik Kartları */
+.stats-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+margin-bottom: 12px;
+}
+
+@media (max-width: 560px) {
+.stats-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+}
+
+.stat-box {
+background: var(--card);
+border: 1px solid var(--line);
+border-radius: 12px;
+padding: 10px;
+text-align: center;
+}
+
+.stat-val {
+font-size: 1.2rem;
+font-weight: 800;
+color: var(--primary-dark);
+}
+
+.stat-val.danger {
+color: var(--bad);
+}
+
+.stat-val.success {
+color: var(--ok);
+}
+
+.stat-lbl {
+font-size: 0.75rem;
+color: var(--muted);
+margin-top: 2px;
+}
+
+/* Form Elemanları */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #cbd5e1;
+border-radius: 10px;
+font-size: 0.93rem;
+background: #ffffff;
+color: var(--text);
+font-family: inherit;
+}
+
+.two-col {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+
+@media (max-width: 520px) {
+.two-col {
+grid-template-columns: 1fr;
+}
+}
+
+.form-group {
+margin-bottom: 12px;
+}
+
+.form-label {
+display: block;
+font-size: 0.83rem;
+font-weight: 700;
+margin-bottom: 5px;
+color: #334155;
+}
+
+/* Filtre Hapları */
+.filter-pills {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+margin-top: 9px;
+}
+
+.pill-btn {
+border: 1px solid #cbd5e1;
+background: #f8fafc;
+color: #334155;
+border-radius: 999px;
+padding: 6px 12px;
+font-size: 0.8rem;
+font-weight: 700;
+cursor: pointer;
+}
+
+.pill-btn.active {
+background: var(--primary);
+color: #ffffff;
+border-color: var(--primary);
+}
+
+/* Ödünç Kayıt Kartları */
+.loan-item {
+border: 1px solid var(--line);
+border-radius: 12px;
+padding: 12px;
+margin-bottom: 10px;
+background: #ffffff;
+}
+
+.loan-item.overdue {
+border-color: #fca5a5;
+background: #fffafa;
+}
+
+.loan-top {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+gap: 8px;
+flex-wrap: wrap;
+}
+
+.book-name {
+font-weight: 800;
+font-size: 0.99rem;
+color: #0f172a;
+}
+
+.student-line {
+font-size: 0.88rem;
+font-weight: 700;
+color: var(--primary-dark);
+margin-top: 3px;
+}
+
+.status-pill {
+font-size: 0.74rem;
+font-weight: 700;
+padding: 3px 9px;
+border-radius: 999px;
+white-space: nowrap;
+}
+
+.st-active {
+background: var(--primary-soft);
+color: var(--primary-dark);
+}
+
+.st-overdue {
+background: var(--bad-bg);
+color: var(--bad);
+}
+
+.st-returned {
+background: var(--ok-bg);
+color: var(--ok);
+}
+
+.loan-meta {
+font-size: 0.82rem;
+color: var(--muted);
+margin-top: 6px;
+}
+
+.loan-actions {
+display: flex;
+gap: 8px;
+margin-top: 10px;
+flex-wrap: wrap;
+}
+
+/* Butonlar */
+.btn {
+border: none;
+border-radius: 10px;
+padding: 9px 13px;
+font-size: 0.84rem;
+font-weight: 700;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 5px;
+text-decoration: none;
+}
+
+.btn-primary {
+background: var(--primary);
+color: #ffffff;
+}
+
+.btn-primary:hover {
+background: var(--primary-dark);
+}
+
+.btn-light {
+background: #f1f5f9;
+color: #0f172a;
+border: 1px solid #cbd5e1;
+}
+
+.btn-ok {
+background: var(--ok-bg);
+color: var(--ok);
+}
+
+.btn-bad {
+background: var(--bad-bg);
+color: var(--bad);
+}
+
+.btn-wa {
+background: #16a34a;
+color: #ffffff;
+}
+
+.due-preview {
+background: var(--primary-soft);
+color: var(--primary-dark);
+border-radius: 10px;
+padding: 10px 12px;
+font-size: 0.85rem;
+font-weight: 700;
+margin-bottom: 12px;
+}
+
+/* Katalog ve Kamera Stilleri */
+.catalog-card {
+display: flex;
+gap: 12px;
+border: 1px solid var(--line);
+border-radius: 12px;
+padding: 12px;
+margin-bottom: 10px;
+background: #ffffff;
+align-items: flex-start;
+}
+
+.book-thumb {
+width: 68px;
+height: 94px;
+border-radius: 8px;
+object-fit: cover;
+border: 1px solid #cbd5e1;
+background: #f1f5f9;
+flex-shrink: 0;
+}
+
+.book-thumb-placeholder {
+width: 68px;
+height: 94px;
+border-radius: 8px;
+border: 1px dashed #cbd5e1;
+background: #f8fafc;
+color: #64748b;
+font-size: 0.7rem;
+font-weight: 700;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: center;
+padding: 4px;
+flex-shrink: 0;
+}
+
+.book-count-bar {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+margin-top: 6px;
+}
+
+.count-pill {
+font-size: 0.73rem;
+font-weight: 800;
+padding: 3px 9px;
+border-radius: 999px;
+background: #f1f5f9;
+color: #334155;
+border: 1px solid #cbd5e1;
+}
+
+.count-pill.shelf {
+background: var(--ok-bg);
+color: var(--ok);
+border-color: #86efac;
+}
+
+.count-pill.lent {
+background: var(--warn-bg);
+color: var(--warn);
+border-color: #fde68a;
+}
+
+.copy-badges {
+display: flex;
+flex-wrap: wrap;
+gap: 5px;
+margin-top: 7px;
+}
+
+.copy-chip {
+font-size: 0.72rem;
+font-weight: 800;
+padding: 3px 8px;
+border-radius: 7px;
+}
+
+.copy-chip.shelf {
+background: var(--ok-bg);
+color: var(--ok);
+}
+
+.copy-chip.lent {
+background: var(--warn-bg);
+color: var(--warn);
+}
+
+.capture-review-box {
+display: grid;
+grid-template-columns: 120px 1fr;
+gap: 14px;
+background: #f8fafc;
+border: 1.5px solid #bae6fd;
+border-radius: 12px;
+padding: 12px;
+margin-top: 10px;
+align-items: start;
+}
+
+@media (max-width: 520px) {
+.capture-review-box {
+grid-template-columns: 1fr;
+}
+}
+
+.capture-preview-img {
+width: 100%;
+max-width: 130px;
+height: 170px;
+object-fit: cover;
+border-radius: 10px;
+border: 1px solid #cbd5e1;
+background: #ffffff;
+margin: 0 auto;
+display: block;
+}
+
+.ocr-status-banner {
+padding: 9px 12px;
+border-radius: 10px;
+font-size: 0.82rem;
+font-weight: 700;
+background: #e0f2fe;
+color: #075985;
+border: 1px solid #bae6fd;
+margin-bottom: 8px;
+line-height: 1.4;
+}
+
+.ocr-status-banner.ok {
+background: var(--ok-bg);
+color: var(--ok);
+border-color: #86efac;
+}
+
+.ocr-status-banner.err {
+background: var(--bad-bg);
+color: var(--bad);
+border-color: #fca5a5;
+}
+
+.live-cam-box {
+background: #0f172a;
+border-radius: 12px;
+padding: 10px;
+margin-top: 10px;
+text-align: center;
+}
+
+.live-cam-video {
+width: 100%;
+max-height: 280px;
+border-radius: 8px;
+background: #000000;
+object-fit: cover;
+}
+
+.catalog-quick-pick {
+background: #f8fafc;
+border: 1px solid #cbd5e1;
+border-radius: 10px;
+padding: 10px;
+margin-bottom: 12px;
+}
+
+.code-textarea {
+width: 100%;
+min-height: 120px;
+padding: 10px 12px;
+border: 1px solid #cbd5e1;
+border-radius: 10px;
+font-family: inherit;
+font-size: 0.85rem;
+line-height: 1.45;
+background: #f8fafc;
+color: var(--text);
+resize: vertical;
+margin-top: 6px;
+}
+
+/* En Çok Okuyanlar / Kürsü & Tablo */
+.podium-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+margin-bottom: 12px;
+}
+
+@media (max-width: 560px) {
+.podium-grid {
+grid-template-columns: 1fr;
+}
+}
+
+.podium-card {
+border-radius: 12px;
+padding: 12px;
+border: 1px solid var(--line);
+background: #ffffff;
+text-align: center;
+}
+
+.podium-card.rank-1 {
+background: linear-gradient(180deg, #fef9c3 0%, #ffffff 100%);
+border-color: #facc15;
+}
+
+.podium-card.rank-2 {
+background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%);
+border-color: #cbd5e1;
+}
+
+.podium-card.rank-3 {
+background: linear-gradient(180deg, #ffedd5 0%, #ffffff 100%);
+border-color: #fdba74;
+}
+
+.medal-badge {
+display: inline-block;
+font-size: 0.74rem;
+font-weight: 800;
+padding: 3px 10px;
+border-radius: 999px;
+margin-bottom: 6px;
+}
+
+.rank-1 .medal-badge {
+background: #fef08a;
+color: #854d0e;
+}
+
+.rank-2 .medal-badge {
+background: #e2e8f0;
+color: #334155;
+}
+
+.rank-3 .medal-badge {
+background: #fed7aa;
+color: #9a3412;
+}
+
+.class-bar-wrap {
+margin-bottom: 10px;
+}
+
+.class-bar-head {
+display: flex;
+justify-content: space-between;
+font-size: 0.84rem;
+font-weight: 700;
+margin-bottom: 4px;
+}
+
+.class-bar-track {
+width: 100%;
+height: 10px;
+background: #e2e8f0;
+border-radius: 999px;
+overflow: hidden;
+}
+
+.class-bar-fill {
+height: 100%;
+background: var(--primary);
+border-radius: 999px;
+}
+
+/* A4 Çıktı ve Paylaşım Çekmeceleri */
+.drawer-box {
+margin-top: 12px;
+padding: 12px;
+border: 1.5px solid #cbd5e1;
+border-radius: 12px;
+background: #ffffff;
+display: none;
+}
+
+.drawer-box.open {
+display: block;
+}
+
+.poster-table {
+width: 100%;
+border-collapse: collapse;
+margin-top: 10px;
+font-size: 0.84rem;
+}
+
+.poster-table th,
+.poster-table td {
+border: 1px solid #cbd5e1;
+padding: 7px 9px;
+text-align: left;
+}
+
+.poster-table th {
+background: #f1f5f9;
+font-weight: 800;
+}
+
+.official-sig-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 24px;
+margin-top: 26px;
+padding-top: 10px;
+text-align: center;
+font-size: 0.85rem;
+color: #0f172a;
+}
+
+.official-sig-role {
+font-weight: 800;
+margin-bottom: 3px;
+}
+
+.official-sig-name {
+font-weight: 700;
+}
+
+.official-sig-title {
+font-size: 0.77rem;
+color: #475569;
+}
+
+.official-sig-line {
+margin-top: 30px;
+font-size: 0.75rem;
+color: #64748b;
+}
+
+.fallback-copy-box {
+margin-top: 10px;
+padding: 10px;
+background: #f8fafc;
+border: 1px dashed #94a3b8;
+border-radius: 10px;
+display: none;
+}
+
+.fallback-copy-box.open {
+display: block;
+}
+
+.empty-msg {
+text-align: center;
+color: var(--muted);
+padding: 20px 10px;
+font-size: 0.9rem;
+}
+
+.toast {
+position: fixed;
+bottom: 16px;
+left: 50%;
+transform: translateX(-50%);
+background: #0f172a;
+color: #ffffff;
+padding: 10px 16px;
+border-radius: 10px;
+font-size: 0.85rem;
+font-weight: 600;
+z-index: 99;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.2s ease;
+max-width: 92vw;
+text-align: center;
+}
+
+.toast.show {
+opacity: 1;
+}
+
+@media print {
+body {
+background: #ffffff !important;
+padding: 0 !important;
+}
+.topbar,
+.nav-tabs,
+.no-print,
+.toast {
+display: none !important;
+}
+.container {
+max-width: 100% !important;
+margin: 0 !important;
+padding: 0 !important;
+}
+.card,
+.drawer-box {
+box-shadow: none !important;
+border: none !important;
+padding: 0 !important;
+}
+}
+</style>
+</head>
+<body>
+<!-- Üst Başlık -->
+<header class="topbar">
+<div class="topbar-inner">
+<div class="brand-wrap">
+<div class="brand-icon" aria-hidden="true">
+<svg width="26" height="26" viewBox="0 0 512 512">
+<rect x="118" y="88" width="276" height="336" rx="24" fill="#0284c7"/>
+<rect x="118" y="88" width="42" height="336" rx="12" fill="#0369a1"/>
+<rect x="178" y="132" width="180" height="74" rx="12" fill="#ffffff"/>
+<path d="M304 88 L356 88 L356 264 L330 242 L304 264 Z" fill="#f59e0b"/>
+</svg>
+</div>
+<div>
+<div class="lib-title" id="headerLibraryName">Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi</div>
+<div class="lib-sub" id="headerLibrarySub">Varsayılan Ödünç Süresi: 15 Gün · Kütüphane Takip Defteri</div>
+</div>
+</div>
+<div class="badge-local">Cihaz Hafızası (Çevrimdışı)</div>
+</div>
+</header>
+
+<main class="container">
+<!-- 5 Sekmeli Ana Navigasyon -->
+<nav class="nav-tabs" aria-label="Kütüphane sekmeleri">
+<button type="button" class="tab-btn active" id="tabBtnList" onclick="switchTab('list')">Ödünç Listesi</button>
+<button type="button" class="tab-btn" id="tabBtnNew" onclick="switchTab('new')">+ Kitap Ver</button>
+<button type="button" class="tab-btn" id="tabBtnCatalog" onclick="switchTab('catalog')">Kitap Listesi</button>
+<button type="button" class="tab-btn" id="tabBtnTop" onclick="switchTab('top')">En Çok Okuyanlar</button>
+<button type="button" class="tab-btn" id="tabBtnSettings" onclick="switchTab('settings')">Ayarlar</button>
+</nav>
+
+<!-- ======================================================================
+SEKME 1: ÖDÜNÇ LİSTESİ
+====================================================================== -->
+<section class="panel active" id="panelList">
+<div class="stats-grid">
+<div class="stat-box">
+<div class="stat-val" id="statActive">0</div>
+<div class="stat-lbl">Aktif Ödünç</div>
+</div>
+<div class="stat-box">
+<div class="stat-val danger" id="statOverdue">0</div>
+<div class="stat-lbl">Geciken Kitap</div>
+</div>
+<div class="stat-box">
+<div class="stat-val success" id="statReturned">0</div>
+<div class="stat-lbl">İade Edilen</div>
+</div>
+<div class="stat-box">
+<div class="stat-val" id="statTotal">0</div>
+<div class="stat-lbl">Toplam İşlem</div>
+</div>
+</div>
+
+<div class="card">
+<input type="text" id="searchInput" placeholder="Öğrenci adı, sınıf/no (ör. 5/D), kitap adı veya KTP-001 ara..." oninput="renderLoanList()" />
+<div class="filter-pills" id="loanFilterPills">
+<button type="button" class="pill-btn active" data-filter="active" onclick="setLoanFilter('active', this)">Aktif</button>
+<button type="button" class="pill-btn" data-filter="overdue" onclick="setLoanFilter('overdue', this)">Geciken</button>
+<button type="button" class="pill-btn" data-filter="returned" onclick="setLoanFilter('returned', this)">İade Edilen</button>
+<button type="button" class="pill-btn" data-filter="all" onclick="setLoanFilter('all', this)">Tümü</button>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Kitap Ödünç Kayıtları</div>
+<div id="loansContainer"></div>
+</div>
+</section>
+
+<!-- ======================================================================
+SEKME 2: + KİTAP VER
+====================================================================== -->
+<section class="panel" id="panelNew">
+<div class="card">
+<div class="card-title">Yeni Kitap Ödünç Kaydı</div>
+<form id="newLoanForm" onsubmit="saveLoan(event)">
+<!-- Katalogdan Raftaki Nüshayı Hızlı Seçme -->
+<div class="catalog-quick-pick">
+<label class="form-label" for="catalogCopySelect" style="color:#0369a1;">Kitap Listesinden Raftaki Nüshayı Seç (İsteğe bağlı)</label>
+<input type="text" id="catalogPickSearch" placeholder="Katalogda kitap adı, yazar veya KTP-001 ara..." oninput="renderCatalogLoanPicker()" style="margin-bottom:8px;" />
+<select id="catalogCopySelect" onchange="onCatalogCopyPicked()">
+<option value="">-- Katalogdan raftaki nüshayı seçin veya aşağıya elle yazın --</option>
+</select>
+<div id="catalogPickHint" style="font-size:0.76rem; color:var(--muted); margin-top:5px;">
+Seçilen demirbaş nüsha otomatik olarak öğrenciye zimmetlenir.
+</div>
+</div>
+
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="studentName">Öğrenci Adı Soyadı *</label>
+<input type="text" id="studentName" list="knownStudentsList" placeholder="Örn: Zeynep Demir" required oninput="autofillStudentClassNo()" />
+<datalist id="knownStudentsList"></datalist>
+</div>
+<div class="form-group">
+<label class="form-label" for="studentClassNo">Sınıf / Okul No *</label>
+<input type="text" id="studentClassNo" placeholder="Örn: 5/D - 142" required />
+</div>
+</div>
+
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="bookTitle">Kitap Adı *</label>
+<input type="text" id="bookTitle" placeholder="Örn: Küçük Prens" required />
+</div>
+<div class="form-group">
+<label class="form-label" for="bookAuthorCode">Yazar / Demirbaş No (İsteğe bağlı)</label>
+<input type="text" id="bookAuthorCode" placeholder="Örn: Antoine de Saint-Exupéry / KTP-001" />
+</div>
+</div>
+
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="bookPageCount">Sayfa Sayısı (İsteğe bağlı)</label>
+<input type="number" id="bookPageCount" min="1" max="5000" placeholder="Örn: 112" />
+</div>
+<div class="form-group">
+<label class="form-label" for="loanNote">Not (İsteğe bağlı)</label>
+<input type="text" id="loanNote" placeholder="Örn: Kapaklı, temiz teslim edildi" />
+</div>
+</div>
+
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="loanDate">Ödünç Alma Tarihi *</label>
+<input type="date" id="loanDate" required onchange="updateDueDatePreview()" />
+</div>
+<div class="form-group">
+<label class="form-label" for="loanDays">Ödünç Süresi</label>
+<select id="loanDays" onchange="updateDueDatePreview()">
+<option value="7">7 gün</option>
+<option value="15" selected>15 gün</option>
+<option value="30">30 gün</option>
+</select>
+</div>
+</div>
+
+<div class="due-preview" id="dueDatePreview">Son Teslim Tarihi: --.--.----</div>
+
+<button type="submit" class="btn btn-primary" style="width:100%; padding:12px;">Ödünç Kaydını Kaydet</button>
+</form>
+</div>
+</section>
+
+<!-- ======================================================================
+SEKME 3: KİTAP LİSTESİ (BARKODSUZ DEMİRBAŞ KATALOĞU & KAMERA KAPAK ÇEKİMİ)
+====================================================================== -->
+<section class="panel" id="panelCatalog">
+<div class="stats-grid">
+<div class="stat-box">
+<div class="stat-val" id="catStatTotalCopies">0</div>
+<div class="stat-lbl">Toplam Kitap (Nüsha)</div>
+</div>
+<div class="stat-box">
+<div class="stat-val success" id="catStatShelfCopies">0</div>
+<div class="stat-lbl">Rafta Hazır</div>
+</div>
+<div class="stat-box">
+<div class="stat-val danger" id="catStatLentCopies">0</div>
+<div class="stat-lbl">Öğrencide (Ödünçte)</div>
+</div>
+<div class="stat-box">
+<div class="stat-val" id="catStatTitles">0</div>
+<div class="stat-lbl">Farklı Eser</div>
+</div>
+</div>
+
+<!-- Kamerayla Kapak Çekme / Elle / Toplu Metinle Kitap Ekleme -->
+<div class="card no-print">
+<div class="card-title">Kamerayla Kapak Çekerek veya Elle Kitap Ekle</div>
+<p style="font-size:0.82rem; color:var(--muted); margin-bottom:10px;">
+Barkod kullanılmaz. Aynı kitaptan birden fazla nüsha varsa <strong>Adet</strong> sayısını girin; her kopyaya otomatik <strong>KTP-001, KTP-002...</strong> demirbaş numarası atanır.
+</p>
+
+<div class="loan-actions" style="margin-top:0;">
+<button type="button" class="btn btn-primary" onclick="triggerCoverPhotoInput()">Kamerayla Kapak Çek / Fotoğraf Seç</button>
+<button type="button" class="btn btn-light" onclick="openLiveCamera()">Canlı Kamera Aç</button>
+<button type="button" class="btn btn-light" onclick="openManualCatalogForm()">Fotoğrafsız Ekle</button>
+<button type="button" class="btn btn-light" onclick="toggleBulkCatalogBox()">Toplu Metinle Ekle</button>
+<input type="file" id="coverPhotoInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCoverFileSelected(event)" />
+</div>
+
+<!-- Canlı Kamera Görüntüsü -->
+<div id="liveCameraBox" class="live-cam-box" style="display:none;">
+<video id="liveCameraVideo" class="live-cam-video" autoplay playsinline muted></video>
+<div class="loan-actions" style="justify-content:center; margin-top:10px;">
+<button type="button" class="btn btn-primary" onclick="snapLiveCameraPhoto()">Kapağı Çek</button>
+<button type="button" class="btn btn-bad" onclick="closeLiveCamera()">Kamerayı Kapat</button>
+</div>
+</div>
+
+<!-- Kapak Önizleme ve Kitap Kayıt Formu -->
+<div id="catalogAddFormWrap" style="display:none; margin-top:12px;">
+<div id="coverOcrStatus" class="ocr-status-banner">Kapak fotoğrafı bekleniyor...</div>
+<div class="capture-review-box">
+<div>
+<img id="capturedCoverPreview" class="capture-preview-img" src="" alt="Kitap Kapağı" style="display:none;" />
+<div id="noCoverPlaceholder" class="book-thumb-placeholder" style="width:120px; height:160px; margin:0 auto;">Kapak Fotoğrafı Yok</div>
+<button type="button" id="btnRetryCoverOcr" class="btn btn-light" style="width:100%; margin-top:6px; padding:6px; font-size:0.75rem; display:none;" onclick="retryCoverAnalysis()">Kapaktan Tekrar Oku</button>
+<button type="button" id="btnRemoveCapturedCover" class="btn btn-light" style="width:100%; margin-top:6px; padding:6px; font-size:0.75rem; display:none;" onclick="clearCapturedCover()">Fotoğrafı Kaldır</button>
+</div>
+<div>
+<div class="form-group">
+<label class="form-label" for="catBookTitle">Kitap Adı *</label>
+<input type="text" id="catBookTitle" placeholder="Örn: Küçük Prens" />
+</div>
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="catBookAuthor">Yazar</label>
+<input type="text" id="catBookAuthor" placeholder="Örn: Antoine de Saint-Exupéry" />
+</div>
+<div class="form-group">
+<label class="form-label" for="catBookPages">Sayfa Sayısı</label>
+<input type="number" id="catBookPages" min="1" max="5000" placeholder="Örn: 112" />
+</div>
+</div>
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="catBookCopies">Adet (Nüsha Sayısı) *</label>
+<input type="number" id="catBookCopies" min="1" max="100" value="1" />
+</div>
+<div class="form-group" style="display:flex; align-items:flex-end;">
+<button type="button" class="btn btn-primary" style="width:100%; padding:10px;" onclick="saveCatalogBook()">Kitap Listesine Ekle</button>
+</div>
+</div>
+<div style="text-align:right;">
+<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.78rem;" onclick="closeCatalogAddForm()">Kapat</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Toplu Metin Giriş Alanı -->
+<div id="bulkCatalogBox" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
+<label class="form-label" for="bulkCatalogInput">Her satıra bir kitap yazın (<code>Kitap Adı - Yazar - Adet</code>)</label>
+<textarea id="bulkCatalogInput" class="code-textarea" placeholder="Küçük Prens - Antoine de Saint-Exupéry - 3 Şeker Portakalı - Jose Mauro de Vasconcelos - 2 Çalıkuşu - Reşat Nuri Güntekin"></textarea>
+<div class="loan-actions">
+<button type="button" class="btn btn-primary" onclick="importBulkCatalogText()">Satırları Listeye Aktar</button>
+<button type="button" class="btn btn-light" onclick="toggleBulkCatalogBox()">Kapat</button>
+</div>
+</div>
+</div>
+
+<!-- Katalog Listesi ve A4 Envanter Yazdırma -->
+<div class="card">
+<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+<div class="card-title" style="margin-bottom:0;">Kütüphane Kitap Listesi</div>
+<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+<span id="catalogSummaryLine" style="font-size:0.78rem; font-weight:700; color:#0369a1;">Toplam: 0 · Rafta: 0 · Öğrencide: 0</span>
+<button type="button" class="btn btn-primary no-print" style="padding:7px 12px; font-size:0.8rem;" onclick="toggleCatalogPrintPreview()">Kitap Listesini Yazdır / A4 Çıktı</button>
+</div>
+</div>
+
+<!-- A4 Envanter Listesi Önizleme Çekmecesi -->
+<div class="drawer-box" id="catalogPrintPreviewBox" style="margin-bottom:12px;">
+<div class="no-print" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #cbd5e1;">
+<strong style="font-size:0.9rem;">A4 Kütüphane Kitap Envanter Listesi</strong>
+<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+<select id="catalogPrintScopeFilter" onchange="updateCatalogPrintPreview()" style="width:auto; padding:6px 10px; font-size:0.8rem;">
+<option value="all">Tüm Kitaplar</option>
+<option value="available">Sadece Rafta Olanlar</option>
+<option value="lent">Sadece Öğrencide Olanlar</option>
+</select>
+<button type="button" class="btn btn-primary" style="padding:6px 11px; font-size:0.8rem;" onclick="triggerNativePrint()">Yazdır (Tarayıcı)</button>
+<button type="button" class="btn btn-ok" style="padding:6px 11px; font-size:0.8rem;" onclick="downloadCatalogPrintHtml()">A4 Listeyi İndir (HTML)</button>
+<button type="button" class="btn btn-light" style="padding:6px 11px; font-size:0.8rem;" onclick="toggleCatalogFallbackCopy()">Metni / Kodu Kopyala</button>
+<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.8rem;" onclick="toggleCatalogPrintPreview()">Kapat</button>
+</div>
+</div>
+<div id="catalogPrintPreviewContent"></div>
+<!-- Sandbox / Önizleme İndirme Engeli İçin Yedek Kopyalama Kutusu -->
+<div class="fallback-copy-box no-print" id="catalogFallbackBox">
+<div style="font-size:0.78rem; font-weight:700; color:#334155;">
+Kısıtlı önizleme penceresinde indirme/yazdırma engelleniyorsa aşağıdaki düz metni veya HTML kodunu kopyalayabilirsiniz:
+</div>
+<div class="loan-actions" style="margin-top:6px;">
+<button type="button" class="btn btn-light" style="padding:5px 10px; font-size:0.76rem;" onclick="fillCatalogFallback('text')">Düz Metin Listesi</button>
+<button type="button" class="btn btn-light" style="padding:5px 10px; font-size:0.76rem;" onclick="fillCatalogFallback('html')">A4 HTML Kodu</button>
+<button type="button" class="btn btn-primary" style="padding:5px 10px; font-size:0.76rem;" onclick="copyTextareaElement('catalogFallbackTextarea')">Seç ve Kopyala</button>
+</div>
+<textarea id="catalogFallbackTextarea" class="code-textarea" readonly onclick="this.select()"></textarea>
+</div>
+</div>
+
+<div class="two-col no-print" style="margin-bottom:12px;">
+<input type="text" id="catalogSearchInput" placeholder="Kitap adı, yazar veya KTP-001 ara..." oninput="renderCatalogList()" />
+<select id="catalogAvailabilityFilter" onchange="renderCatalogList()">
+<option value="all">Tüm Kitaplar</option>
+<option value="available">Rafta Nüshası Olanlar</option>
+<option value="none_left">Tümü Öğrencide Olanlar</option>
+</select>
+</div>
+
+<div id="catalogListContainer"></div>
+</div>
+</section>
+
+<!-- ======================================================================
+SEKME 4: EN ÇOK OKUYANLAR LİDERLİK TABLOSU
+====================================================================== -->
+<section class="panel" id="panelTop">
+<div class="card no-print">
+<div class="card-title">Okuma Liderliği Filtreleri</div>
+<div class="two-col">
+<div class="form-group" style="margin-bottom:0;">
+<label class="form-label" for="topPeriodFilter">Dönem (1 Eylül'de Otomatik Güncellenir)</label>
+<select id="topPeriodFilter" onchange="renderTopReaders()"></select>
+</div>
+<div class="form-group" style="margin-bottom:0;">
+<label class="form-label" for="topMetricFilter">Sayım Ölçütü</label>
+<select id="topMetricFilter" onchange="renderTopReaders()">
+<option value="returned_only">Sadece İade Edilenler (Tamamlanan)</option>
+<option value="all_loans">Tüm Ödünç Alınanlar</option>
+</select>
+</div>
+</div>
+
+<div class="loan-actions">
+<button type="button" class="btn btn-primary" onclick="togglePosterPreview()">Pano Çıktısı Önizle / Yazdır</button>
+<button type="button" class="btn btn-wa" onclick="shareTopReadersWhatsApp()">WhatsApp'ta Paylaş</button>
+<button type="button" class="btn btn-light" onclick="copyTopReadersSummary()">Metni Kopyala / Göster</button>
+</div>
+
+<!-- WhatsApp / Metin Paylaşım Çekmecesi -->
+<div class="drawer-box" id="shareDrawer">
+<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+<span style="font-size:0.82rem; font-weight:700; color:#334155;">Paylaşım Metni (Seçip kopyalayabilirsiniz):</span>
+<button type="button" class="btn btn-light" style="padding:5px 10px; font-size:0.78rem;" onclick="closeShareDrawer()">Kapat</button>
+</div>
+<textarea id="shareTextArea" class="code-textarea" readonly onclick="this.select()"></textarea>
+</div>
+
+<!-- A4 Pano Çıktısı Önizleme Çekmecesi -->
+<div class="drawer-box" id="posterPreviewBox">
+<div class="no-print" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #cbd5e1;">
+<strong style="font-size:0.9rem;">A4 Kütüphane Panosu Çıktısı</strong>
+<div style="display:flex; gap:6px; flex-wrap:wrap;">
+<button type="button" class="btn btn-primary" style="padding:6px 11px; font-size:0.8rem;" onclick="triggerNativePrint()">Yazdır (Tarayıcı)</button>
+<button type="button" class="btn btn-ok" style="padding:6px 11px; font-size:0.8rem;" onclick="downloadPosterHtml()">Pano Çıktısını İndir (HTML)</button>
+<button type="button" class="btn btn-light" style="padding:6px 11px; font-size:0.8rem;" onclick="togglePosterFallbackCopy()">Metni / Kodu Kopyala</button>
+<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.8rem;" onclick="togglePosterPreview()">Kapat</button>
+</div>
+</div>
+<div id="posterPreviewContent"></div>
+<!-- Sandbox / Önizleme İndirme Engeli İçin Yedek Kopyalama Kutusu -->
+<div class="fallback-copy-box no-print" id="posterFallbackBox">
+<div style="font-size:0.78rem; font-weight:700; color:#334155;">
+Kısıtlı önizleme penceresinde indirme/yazdırma engelleniyorsa aşağıdaki düz metni veya A4 HTML kodunu kopyalayabilirsiniz:
+</div>
+<div class="loan-actions" style="margin-top:6px;">
+<button type="button" class="btn btn-light" style="padding:5px 10px; font-size:0.76rem;" onclick="fillPosterFallback('text')">Düz Metin Listesi</button>
+<button type="button" class="btn btn-light" style="padding:5px 10px; font-size:0.76rem;" onclick="fillPosterFallback('html')">A4 HTML Kodu</button>
+<button type="button" class="btn btn-primary" style="padding:5px 10px; font-size:0.76rem;" onclick="copyTextareaElement('posterFallbackTextarea')">Seç ve Kopyala</button>
+</div>
+<textarea id="posterFallbackTextarea" class="code-textarea" readonly onclick="this.select()"></textarea>
+</div>
+</div>
+</div>
+
+<!-- İlk 3 Madalya Kürsüsü -->
+<div id="topPodiumContainer"></div>
+
+<!-- Tüm Öğrenciler Sıralama Tablosu -->
+<div class="card">
+<div class="card-title" id="topListHeading">En Çok Kitap Okuyan Öğrenciler</div>
+<div id="topReadersContainer"></div>
+</div>
+
+<!-- En Çok Okuyan Sınıflar -->
+<div class="card">
+<div class="card-title">En Çok Okuyan Sınıflar</div>
+<div id="topClassesContainer"></div>
+</div>
+</section>
+
+<!-- ======================================================================
+SEKME 5: AYARLAR & YENİ EĞİTİM-ÖĞRETİM YILI GEÇİŞİ
+====================================================================== -->
+<section class="panel" id="panelSettings">
+<div class="card">
+<div class="card-title">Okul, Kütüphane ve İmza Yetkilileri</div>
+
+<div class="form-group">
+<label class="form-label" for="setLibraryName">Okul / Kütüphane Adı</label>
+<input type="text" id="setLibraryName" />
+</div>
+
+<div class="two-col">
+<div class="form-group">
+<label class="form-label" for="setLibrarianName">Kütüphane Sorumlusu Adı Soyadı</label>
+<input type="text" id="setLibrarianName" placeholder="Fevzi SALDIR" />
+</div>
+<div class="form-group">
+<label class="form-label" for="setPrincipalName">Okul Müdürü Adı Soyadı</label>
+<input type="text" id="setPrincipalName" placeholder="Ensar GEZEN" />
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label" for="setDefaultDays">Varsayılan Ödünç Süresi</label>
+<select id="setDefaultDays">
+<option value="7">7 gün</option>
+<option value="15">15 gün</option>
+<option value="30">30 gün</option>
+</select>
+</div>
+
+<div class="form-group">
+<label class="form-label" for="setGeminiApiKey">Gemini API Anahtarı (Kapak Fotoğrafından Otomatik Okuma İçin — <code>AQ.</code> veya <code>AIza...</code>)</label>
+<input type="text" id="setGeminiApiKey" placeholder="AQ.Ab8RN6... veya AIza..." />
+<div style="font-size:0.76rem; color:var(--muted); margin-top:5px;">
+Google AI Studio'dan alınan yeni <code>AQ.</code> ve standart <code>AIza</code> anahtarları desteklenir. Anahtar kısıtlaması (API restrictions) ayarlıysa <strong>Generative Language API</strong> izninin açık olduğundan emin olun.
+</div>
+</div>
+
+<button type="button" class="btn btn-primary" style="width:100%; padding:12px;" onclick="saveSettings()">Ayarları Kaydet</button>
+</div>
+
+<!-- Yeni Eğitim-Öğretim Yılına Geçiş Yardımcısı -->
+<div class="card">
+<div class="card-title">Yeni Eğitim-Öğretim Yılına Geçiş</div>
+<div id="academicYearStatusBanner" class="due-preview" style="margin-bottom:10px;">
+Aktif Eğitim-Öğretim Yılı: --
+</div>
+<p style="font-size:0.83rem; color:var(--muted); margin-bottom:10px;">
+Her yıl <strong>1 Eylül</strong> geldiğinde <strong>En Çok Okuyanlar</strong> listesi otomatik olarak yeni eğitim-öğretim yılına geçer; geçmiş yılların kayıtları silinmez. Eylül başında aşağıdaki adımlarla yıl sonu yedeğinizi alıp öğrenci sınıflarını otomatik yükseltebilirsiniz.
+</p>
+<div class="loan-actions">
+<button type="button" class="btn btn-light" onclick="exportBackup()">1. Yıl Sonu JSON Yedeğini İndir</button>
+<button type="button" class="btn btn-primary" onclick="promoteStudentClasses()">2. Sınıfları Yükselt (5→6, 6→7, 7→8, 8→Mezun)</button>
+</div>
+</div>
+
+<!-- JSON Yedekleme ve Geri Yükleme -->
+<div class="card">
+<div class="card-title">Yedekleme ve Geri Yükleme (JSON)</div>
+<div class="loan-actions">
+<button type="button" class="btn btn-light" onclick="exportBackup()">JSON Yedek İndir</button>
+<button type="button" class="btn btn-primary" onclick="triggerImportBackup()">JSON Yedekten Geri Yükle (Dosya)</button>
+<button type="button" class="btn btn-light" onclick="toggleJsonPasteBox()">JSON Metni Yapıştır / Kopyala</button>
+<button type="button" class="btn btn-bad" onclick="resetSampleData()">Örnek Verilere Dön</button>
+<input type="file" id="backupFileInput" accept=".json,application/json" style="display:none;" onchange="importBackup(event)" />
+</div>
+
+<!-- Dosya Seçici / İndirme Engelli Ortamlar İçin JSON Yapıştır/Kopyala Alanı -->
+<div class="fallback-copy-box" id="jsonPasteBox">
+<div style="font-size:0.78rem; font-weight:700; color:#334155;">
+Yedek JSON verisini buradan kopyalayabilir veya daha önce aldığınız JSON yedeğini yapıştırıp geri yükleyebilirsiniz:
+</div>
+<textarea id="jsonPasteTextarea" class="code-textarea" placeholder='{"settings": ..., "catalog": [...], "loans": [...]}'></textarea>
+<div class="loan-actions" style="margin-top:8px;">
+<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.78rem;" onclick="fillJsonPasteWithCurrent()">Mevcut Veriyi Göster ve Kopyala</button>
+<button type="button" class="btn btn-primary" style="padding:6px 10px; font-size:0.78rem;" onclick="restoreFromJsonTextarea()">Yapıştırılan JSON'dan Geri Yükle</button>
+<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.78rem;" onclick="toggleJsonPasteBox()">Kapat</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========================================================================
+1. GÜVENLİ DEPOLAMA KATMANI (localStorage + SANDBOX BELLEK YEDEĞİ)
+======================================================================== */
+const STORAGE_KEY = "atca_hadiloglu_kutuphane_v5";
+const memoryStore = {};
+let currentLoanFilter = "active";
+
+function readStore(key) {
+try {
+if (typeof window !== "undefined" && window.localStorage) {
+return window.localStorage.getItem(key);
+}
+} catch (e) {}
+return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+}
+
+function writeStore(key, value) {
+memoryStore[key] = value;
+try {
+if (typeof window !== "undefined" && window.localStorage) {
+window.localStorage.setItem(key, value);
+}
+} catch (e) {}
+}
+
+/* ========================================================================
+2. TARİH VE EĞİTİM-ÖĞRETİM YILI HESAPLAMALARI
+======================================================================== */
+function todayISO() {
+const now = new Date();
+const y = now.getFullYear();
+const m = String(now.getMonth() + 1).padStart(2, "0");
+const d = String(now.getDate()).padStart(2, "0");
+return y + "-" + m + "-" + d;
+}
+
+function addDaysISO(baseISO, daysToAdd) {
+const parts = String(baseISO || todayISO()).split("-").map(Number);
+const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+dt.setDate(dt.getDate() + Number(daysToAdd || 0));
+const y = dt.getFullYear();
+const m = String(dt.getMonth() + 1).padStart(2, "0");
+const d = String(dt.getDate()).padStart(2, "0");
+return y + "-" + m + "-" + d;
+}
+
+function diffDaysISO(fromISO, toISO) {
+const a = String(fromISO).split("-").map(Number);
+const b = String(toISO).split("-").map(Number);
+const t1 = new Date(a[0], a[1] - 1, a[2]).getTime();
+const t2 = new Date(b[0], b[1] - 1, b[2]).getTime();
+return Math.round((t2 - t1) / 86400000);
+}
+
+function formatDateTR(isoStr) {
+if (!isoStr || isoStr.length < 10) return "-";
+const p = isoStr.split("-");
+return p[2] + "." + p[1] + "." + p[0];
+}
+
+function getAcademicYearStartFromISO(isoStr) {
+const clean = String(isoStr || todayISO());
+const parts = clean.split("-").map(Number);
+const year = parts[0] || new Date().getFullYear();
+const month = parts[1] || (new Date().getMonth() + 1);
+return month >= 9 ? year : year - 1;
+}
+
+function formatAcademicYearLabel(startYear) {
+return startYear + "-" + (startYear + 1);
+}
+
+function getAvailableAcademicYears() {
+const activeStart = getAcademicYearStartFromISO(todayISO());
+const yearSet = new Set([activeStart]);
+(state.loans || []).forEach(function (l) {
+const refDate = l.loanDate || l.returnedDate;
+if (refDate && refDate.length >= 7) {
+yearSet.add(getAcademicYearStartFromISO(refDate));
+}
+});
+return Array.from(yearSet).sort(function (a, b) { return b - a; });
+}
+
+function populateTopPeriodOptions(preserveSelection) {
+const sel = document.getElementById("topPeriodFilter");
+if (!sel) return;
+const prevVal = preserveSelection ? sel.value : "";
+const activeStart = getAcademicYearStartFromISO(todayISO());
+const years = getAvailableAcademicYears();
+
+const opts = years.map(function (yr) {
+const lbl = formatAcademicYearLabel(yr);
+const text = yr === activeStart
+? "Bu Eğitim Yılı (" + lbl + ")"
+: lbl + " Eğitim Yılı";
+return '<option value="ay_' + yr + '">' + escapeHtml(text) + "</option>";
+});
+opts.push('<option value="this_month">Bu Ay</option>');
+opts.push('<option value="all">Tüm Zamanlar</option>');
+
+sel.innerHTML = opts.join("");
+if (prevVal && Array.from(sel.options).some(function (o) { return o.value === prevVal; })) {
+sel.value = prevVal;
+} else {
+sel.value = "ay_" + activeStart;
+}
+}
+
+/* ========================================================================
+3. VARSAYILAN VERİLER VE DURUM YÖNETİMİ
+======================================================================== */
+function getDefaultState() {
+const t = todayISO();
+return {
+settings: {
+libraryName: "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi",
+librarianName: "Fevzi SALDIR",
+principalName: "Ensar GEZEN",
+defaultDays: 15,
+geminiApiKey: ""
+},
+catalog: [
+{
+id: "cat_1",
+title: "Küçük Prens",
+author: "Antoine de Saint-Exupéry",
+pageCount: 112,
+coverDataUrl: "",
+copies: [
+{ code: "KTP-001", status: "available", loanId: "" },
+{ code: "KTP-002", status: "available", loanId: "" }
+ ]
+},
+{
+id: "cat_2",
+title: "Şeker Portakalı",
+author: "Jose Mauro de Vasconcelos",
+pageCount: 182,
+coverDataUrl: "",
+copies: [
+{ code: "KTP-003", status: "available", loanId: "" }
+ ]
+},
+{
+id: "cat_3",
+title: "Pal Sokağı Çocukları",
+author: "Ferenc Molnar",
+pageCount: 240,
+coverDataUrl: "",
+copies: [
+{ code: "KTP-004", status: "lent", loanId: "l7" }
+ ]
+},
+{
+id: "cat_4",
+title: "Çalıkuşu",
+author: "Reşat Nuri Güntekin",
+pageCount: 408,
+coverDataUrl: "",
+copies: [
+{ code: "KTP-005", status: "lent", loanId: "l8" },
+{ code: "KTP-006", status: "available", loanId: "" }
+ ]
+}
+],
+loans: [
+{
+id: "l1",
+studentName: "Elif Yılmaz",
+studentClassNo: "5/D - 118",
+bookTitle: "Küçük Prens",
+authorCode: "Antoine de Saint-Exupéry / KTP-001",
+catalogId: "cat_1",
+copyCode: "KTP-001",
+pageCount: 112,
+note: "",
+loanDate: addDaysISO(t, -42),
+dueDate: addDaysISO(t, -27),
+returnedDate: addDaysISO(t, -29),
+status: "returned"
+},
+{
+id: "l2",
+studentName: "Elif Yılmaz",
+studentClassNo: "5/D - 118",
+bookTitle: "Sol Ayağım",
+authorCode: "Christy Brown",
+catalogId: "",
+copyCode: "",
+pageCount: 184,
+note: "",
+loanDate: addDaysISO(t, -26),
+dueDate: addDaysISO(t, -11),
+returnedDate: addDaysISO(t, -12),
+status: "returned"
+},
+{
+id: "l3",
+studentName: "Elif Yılmaz",
+studentClassNo: "5/D - 118",
+bookTitle: "Momo",
+authorCode: "Michael Ende",
+catalogId: "",
+copyCode: "",
+pageCount: 304,
+note: "",
+loanDate: addDaysISO(t, -11),
+dueDate: addDaysISO(t, 4),
+returnedDate: addDaysISO(t, -2),
+status: "returned"
+},
+{
+id: "l4",
+studentName: "Kerem Aydın",
+studentClassNo: "6/B - 205",
+bookTitle: "Beyaz Diş",
+authorCode: "Jack London",
+catalogId: "",
+copyCode: "",
+pageCount: 256,
+note: "",
+loanDate: addDaysISO(t, -30),
+dueDate: addDaysISO(t, -15),
+returnedDate: addDaysISO(t, -16),
+status: "returned"
+},
+{
+id: "l5",
+studentName: "Kerem Aydın",
+studentClassNo: "6/B - 205",
+bookTitle: "80 Günde Devriâlem",
+authorCode: "Jules Verne",
+catalogId: "",
+copyCode: "",
+pageCount: 224,
+note: "",
+loanDate: addDaysISO(t, -14),
+dueDate: addDaysISO(t, 1),
+returnedDate: addDaysISO(t, -1),
+status: "returned"
+},
+{
+id: "l6",
+studentName: "Zeynep Çelik",
+studentClassNo: "5/D - 142",
+bookTitle: "Şeker Portakalı",
+authorCode: "Jose Mauro de Vasconcelos / KTP-003",
+catalogId: "cat_2",
+copyCode: "KTP-003",
+pageCount: 182,
+note: "",
+loanDate: addDaysISO(t, -20),
+dueDate: addDaysISO(t, -5),
+returnedDate: addDaysISO(t, -6),
+status: "returned"
+},
+{
+id: "l7",
+studentName: "Zeynep Çelik",
+studentClassNo: "5/D - 142",
+bookTitle: "Pal Sokağı Çocukları",
+authorCode: "Ferenc Molnar / KTP-004",
+catalogId: "cat_3",
+copyCode: "KTP-004",
+pageCount: 240,
+note: "",
+loanDate: addDaysISO(t, -4),
+dueDate: addDaysISO(t, 11),
+returnedDate: "",
+status: "active"
+},
+{
+id: "l8",
+studentName: "Mustafa Kaya",
+studentClassNo: "7/A - 314",
+bookTitle: "Çalıkuşu",
+authorCode: "Reşat Nuri Güntekin / KTP-005",
+catalogId: "cat_4",
+copyCode: "KTP-005",
+pageCount: 408,
+note: "",
+loanDate: addDaysISO(t, -18),
+dueDate: addDaysISO(t, -3),
+returnedDate: "",
+status: "active"
+}
+ ]
+};
+}
+
+let state = loadState();
+
+function loadState() {
+const def = getDefaultState();
+const raw = readStore(STORAGE_KEY) || readStore("atca_hadiloglu_kutuphane_v4");
+if (!raw) {
+writeStore(STORAGE_KEY, JSON.stringify(def));
+return def;
+}
+try {
+const parsed = JSON.parse(raw);
+return {
+settings: Object.assign({}, def.settings, parsed.settings || {}),
+catalog: Array.isArray(parsed.catalog) ? parsed.catalog : def.catalog,
+loans: Array.isArray(parsed.loans) ? parsed.loans : def.loans
+};
+} catch (e) {
+return def;
+}
+}
+
+function saveState() {
+try {
+writeStore(STORAGE_KEY, JSON.stringify(state));
+} catch (e) {
+showToast("Depolama sınırına yaklaşıldı; eski kapak fotoğraflarını sadeleştirebilirsiniz.");
+}
+}
+
+function showToast(msg) {
+const el = document.getElementById("toast");
+if (!el) return;
+el.textContent = msg;
+el.classList.add("show");
+clearTimeout(window.__toastTimer);
+window.__toastTimer = setTimeout(function () {
+el.classList.remove("show");
+}, 3000);
+}
+
+/* ========================================================================
+4. ANDROID CHROME PWA MANIFEST & 192x192 / 512x512 PNG İKON ÜRETİCİ
+======================================================================== */
+function setupAndroidPwaManifest(libTitle) {
+try {
+const svgMarkup =
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+'<rect width="512" height="512" rx="112" fill="#0f172a"/>' +
+'<rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#0284c7" stroke-width="10" stroke-opacity="0.45"/>' +
+'<rect x="118" y="88" width="276" height="336" rx="24" fill="#0284c7"/>' +
+'<rect x="118" y="88" width="42" height="336" rx="12" fill="#0369a1"/>' +
+'<rect x="178" y="132" width="180" height="74" rx="12" fill="#ffffff"/>' +
+'<line x1="200" y1="158" x2="336" y2="158" stroke="#0f172a" stroke-width="12" stroke-linecap="round"/>' +
+'<line x1="200" y1="182" x2="296" y2="182" stroke="#64748b" stroke-width="10" stroke-linecap="round"/>' +
+'<path d="M304 88 L356 88 L356 264 L330 242 L304 264 Z" fill="#f59e0b"/>' +
+"</svg>";
+
+const svgDataUri = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgMarkup);
+
+function applyManifest(icons) {
+const manifestObj = {
+name: libTitle || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi",
+short_name: "Kütüphane Defteri",
+description: "Çevrimdışı Okul Kütüphanesi Ödünç Kitap Takip Defteri",
+start_url: window.location.href,
+scope: "./",
+display: "standalone",
+orientation: "portrait",
+background_color: "#0f172a",
+theme_color: "#0f172a",
+icons: icons
+};
+const blob = new Blob([JSON.stringify(manifestObj)], { type: "application/manifest+json" });
+const url = URL.createObjectURL(blob);
+const linkEl = document.getElementById("pwaManifestLink");
+if (linkEl) {
+if (linkEl.dataset.blobUrl) {
+try { URL.revokeObjectURL(linkEl.dataset.blobUrl); } catch (e) {}
+}
+linkEl.href = url;
+linkEl.dataset.blobUrl = url;
+}
+}
+
+const img = new Image();
+img.onload = function () {
+try {
+function makePng(size) {
+const canvas = document.createElement("canvas");
+canvas.width = size;
+canvas.height = size;
+const ctx = canvas.getContext("2d");
+ctx.drawImage(img, 0, 0, size, size);
+return canvas.toDataURL("image/png");
+}
+const png192 = makePng(192);
+const png512 = makePng(512);
+const touchEl = document.getElementById("appTouchIcon");
+if (touchEl) touchEl.href = png192;
+applyManifest([
+{ src: png192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+{ src: png512, sizes: "512x512", type: "image/png", purpose: "any maskable" },
+{ src: svgDataUri, sizes: "any", type: "image/svg+xml", purpose: "any" }
+ ]);
+} catch (err) {
+applyManifest([{ src: svgDataUri, sizes: "512x512", type: "image/svg+xml", purpose: "any" }]);
+}
+};
+img.onerror = function () {
+applyManifest([{ src: svgDataUri, sizes: "512x512", type: "image/svg+xml", purpose: "any" }]);
+};
+img.src = svgDataUri;
+} catch (e) {}
+}
+
+/* ========================================================================
+5. SEKME YÖNETİMİ VE ÜST BAŞLIK ÖZETİ
+======================================================================== */
+function switchTab(tab) {
+if (tab !== "catalog") {
+closeLiveCamera();
+}
+document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+
+if (tab === "list") {
+document.getElementById("tabBtnList").classList.add("active");
+document.getElementById("panelList").classList.add("active");
+renderLoanList();
+} else if (tab === "new") {
+document.getElementById("tabBtnNew").classList.add("active");
+document.getElementById("panelNew").classList.add("active");
+const today = todayISO();
+const loanDateInp = document.getElementById("loanDate");
+loanDateInp.max = today;
+if (!loanDateInp.value) loanDateInp.value = today;
+document.getElementById("loanDays").value = String(state.settings.defaultDays || 15);
+renderCatalogLoanPicker();
+populateKnownStudentsDatalist();
+updateDueDatePreview();
+} else if (tab === "catalog") {
+document.getElementById("tabBtnCatalog").classList.add("active");
+document.getElementById("panelCatalog").classList.add("active");
+renderCatalogList();
+} else if (tab === "top") {
+document.getElementById("tabBtnTop").classList.add("active");
+document.getElementById("panelTop").classList.add("active");
+populateTopPeriodOptions(true);
+renderTopReaders();
+} else if (tab === "settings") {
+document.getElementById("tabBtnSettings").classList.add("active");
+document.getElementById("panelSettings").classList.add("active");
+populateSettingsForm();
+}
+}
+
+function updateHeaderAndStats() {
+const libName = state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const defDays = Number(state.settings.defaultDays) || 15;
+document.title = libName;
+document.getElementById("headerLibraryName").textContent = libName;
+document.getElementById("headerLibrarySub").textContent =
+"Varsayılan Ödünç Süresi: " + defDays + " Gün · Kütüphane Takip Defteri";
+
+const today = todayISO();
+let activeCount = 0;
+let overdueCount = 0;
+let returnedCount = 0;
+
+state.loans.forEach(function (l) {
+if (l.status === "returned") {
+returnedCount++;
+} else {
+activeCount++;
+if (l.dueDate < today) overdueCount++;
+}
+});
+
+document.getElementById("statActive").textContent = activeCount;
+document.getElementById("statOverdue").textContent = overdueCount;
+document.getElementById("statReturned").textContent = returnedCount;
+document.getElementById("statTotal").textContent = state.loans.length;
+}
+
+/* ========================================================================
+6. ÖDÜNÇ LİSTESİ FİLTRELEME VE İŞLEMLERİ
+======================================================================== */
+function setLoanFilter(filterVal, btnEl) {
+currentLoanFilter = filterVal;
+document.querySelectorAll("#loanFilterPills .pill-btn").forEach(function (b) {
+b.classList.remove("active");
+});
+if (btnEl) btnEl.classList.add("active");
+renderLoanList();
+}
+
+function renderLoanList() {
+updateHeaderAndStats();
+const today = todayISO();
+const query = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+
+const filtered = state.loans
+.filter(function (l) {
+const isOverdue = l.status !== "returned" && l.dueDate < today;
+if (currentLoanFilter === "active" && l.status === "returned") return false;
+if (currentLoanFilter === "overdue" && !isOverdue) return false;
+if (currentLoanFilter === "returned" && l.status !== "returned") return false;
+
+if (!query) return true;
+const haystack = (
+l.studentName + " " +
+l.studentClassNo + " " +
+l.bookTitle + " " +
+(l.authorCode || "") + " " +
+(l.copyCode || "")
+).toLowerCase();
+return haystack.indexOf(query) !== -1;
+})
+.sort(function (a, b) {
+const aRet = a.status === "returned" ? 1 : 0;
+const bRet = b.status === "returned" ? 1 : 0;
+if (aRet !== bRet) return aRet - bRet;
+return a.dueDate.localeCompare(b.dueDate);
+});
+
+const container = document.getElementById("loansContainer");
+if (!filtered.length) {
+container.innerHTML = '<div class="empty-msg">Seçili filtreye uygun ödünç kaydı bulunamadı.</div>';
+return;
+}
+
+container.innerHTML = filtered.map(function (l) {
+const isReturned = l.status === "returned";
+const dayDiff = diffDaysISO(today, l.dueDate);
+const isOverdue = !isReturned && dayDiff < 0;
+
+let badgeClass = "st-active";
+let badgeText = dayDiff === 0 ? "Bugün Son Gün" : "Teslime " + dayDiff + " gün var";
+
+if (isReturned) {
+badgeClass = "st-returned";
+badgeText = "İade Alındı (" + formatDateTR(l.returnedDate) + ")";
+} else if (isOverdue) {
+badgeClass = "st-overdue";
+badgeText = "Gecikti (" + Math.abs(dayDiff) + " gün)";
+}
+
+const pagePart = Number(l.pageCount) > 0 ? " · <strong>" + Number(l.pageCount) + " sayfa</strong>" : "";
+const authorPart = l.authorCode ? "<br/>Yazar / Demirbaş: " + escapeHtml(l.authorCode) : "";
+const notePart = l.note ? "<br/>Not: " + escapeHtml(l.note) : "";
+const actionPrimary = !isReturned
+? '<button type="button" class="btn btn-ok" onclick="markReturned('' + escapeAttr(l.id) + '')">✓ İade Al</button>' +
+'<button type="button" class="btn btn-light" onclick="extendLoan('' + escapeAttr(l.id) + '', 7)">+7 Gün Uzat</button>'
+: '<button type="button" class="btn btn-light" onclick="reopenLoan('' + escapeAttr(l.id) + '')">Tekrar Aktif Yap</button>';
+
+return (
+'<div class="loan-item ' + (isOverdue ? "overdue" : "") + '">' +
+'<div class="loan-top">' +
+"<div>" +
+'<div class="book-name">' + escapeHtml(l.bookTitle) + "</div>" +
+'<div class="student-line">' + escapeHtml(l.studentName) + " · " + escapeHtml(l.studentClassNo) + "</div>" +
+"</div>" +
+'<span class="status-pill ' + badgeClass + '">' + badgeText + "</span>" +
+"</div>" +
+'<div class="loan-meta">' +
+"Veriliş: <strong>" + formatDateTR(l.loanDate) + "</strong> · Son Teslim: <strong>" + formatDateTR(l.dueDate) + "</strong>" +
+pagePart + authorPart + notePart +
+"</div>" +
+'<div class="loan-actions">' +
+actionPrimary +
+'<button type="button" class="btn btn-bad" onclick="deleteLoan('' + escapeAttr(l.id) + '')">Sil</button>' +
+"</div>" +
+"</div>"
+);
+}).join("");
+}
+
+function markReturned(id) {
+const item = state.loans.find(function (x) { return x.id === id; });
+if (!item) return;
+item.status = "returned";
+item.returnedDate = todayISO();
+syncCatalogCopyStatus(item.catalogId, item.copyCode, "available", "");
+saveState();
+renderLoanList();
+showToast("Kitap iade alındı ve rafta müsait işaretlendi.");
+}
+
+function reopenLoan(id) {
+const item = state.loans.find(function (x) { return x.id === id; });
+if (!item) return;
+item.status = "active";
+item.returnedDate = "";
+syncCatalogCopyStatus(item.catalogId, item.copyCode, "lent", item.id);
+saveState();
+renderLoanList();
+showToast("Kayıt tekrar aktif ödünç durumuna alındı.");
+}
+
+function extendLoan(id, extraDays) {
+const item = state.loans.find(function (x) { return x.id === id; });
+if (!item) return;
+const base = item.dueDate < todayISO() ? todayISO() : item.dueDate;
+item.dueDate = addDaysISO(base, extraDays);
+saveState();
+renderLoanList();
+showToast("Teslim süresi +" + extraDays + " gün uzatıldı (" + formatDateTR(item.dueDate) + ").");
+}
+
+function deleteLoan(id) {
+const item = state.loans.find(function (x) { return x.id === id; });
+if (item && item.status !== "returned") {
+syncCatalogCopyStatus(item.catalogId, item.copyCode, "available", "");
+}
+state.loans = state.loans.filter(function (x) { return x.id !== id; });
+saveState();
+renderLoanList();
+showToast("Kayıt silindi.");
+}
+
+/* ========================================================================
+7. + KİTAP VER (ÖĞRENCİ OTOMATİK TAMAMLAMA & KATALOG SEÇİMİ)
+======================================================================== */
+function populateKnownStudentsDatalist() {
+const dl = document.getElementById("knownStudentsList");
+if (!dl) return;
+const seen = new Set();
+const opts = [];
+(state.loans || []).forEach(function (l) {
+const name = String(l.studentName || "").trim();
+if (!name || seen.has(name.toLocaleLowerCase("tr-TR"))) return;
+seen.add(name.toLocaleLowerCase("tr-TR"));
+opts.push('<option value="' + escapeAttr(name) + '"></option>');
+});
+dl.innerHTML = opts.join("");
+}
+
+function autofillStudentClassNo() {
+const nameVal = (document.getElementById("studentName").value || "").trim().toLocaleLowerCase("tr-TR");
+const classInp = document.getElementById("studentClassNo");
+if (!nameVal || !classInp || classInp.value.trim()) return;
+const match = (state.loans || []).find(function (l) {
+return String(l.studentName || "").trim().toLocaleLowerCase("tr-TR") === nameVal && l.studentClassNo;
+});
+if (match) {
+classInp.value = match.studentClassNo;
+}
+}
+
+function syncCatalogCopyStatus(catalogId, copyCode, newStatus, loanId) {
+if (!catalogId || !copyCode) return;
+const book = (state.catalog || []).find(function (b) { return b.id === catalogId; });
+if (!book || !Array.isArray(book.copies)) return;
+const copy = book.copies.find(function (c) { return c.code === copyCode; });
+if (!copy) return;
+copy.status = newStatus;
+copy.loanId = newStatus === "lent" ? (loanId || "") : "";
+}
+
+function renderCatalogLoanPicker() {
+const sel = document.getElementById("catalogCopySelect");
+const searchEl = document.getElementById("catalogPickSearch");
+if (!sel) return;
+
+const q = (searchEl ? searchEl.value : "").trim().toLowerCase();
+const optionsHtml = ['<option value="">-- Katalogdan raftaki nüshayı seçin veya aşağıya elle yazın --</option>'];
+let availableCount = 0;
+
+(state.catalog || []).forEach(function (book) {
+(book.copies || []).forEach(function (copy) {
+if (copy.status !== "available") return;
+const label = copy.code + " · " + book.title + (book.author ? " (" + book.author + ")" : "") + " (Rafta)";
+if (q && label.toLowerCase().indexOf(q) === -1) return;
+availableCount++;
+const val = book.id + "::" + copy.code;
+optionsHtml.push('<option value="' + escapeAttr(val) + '">' + escapeHtml(label) + "</option>");
+});
+});
+
+sel.innerHTML = optionsHtml.join("");
+const hintEl = document.getElementById("catalogPickHint");
+if (hintEl) {
+hintEl.textContent = availableCount > 0
+? "Rafta ödünç verilebilir " + availableCount + " nüsha listeleniyor."
+: "Aramaya uygun rafta nüsha yok; aşağıya kitap adını elle yazabilirsiniz.";
+}
+}
+
+function onCatalogCopyPicked() {
+const sel = document.getElementById("catalogCopySelect");
+if (!sel || !sel.value) return;
+const parts = sel.value.split("::");
+const catId = parts[0];
+const copyCode = parts[1];
+const book = (state.catalog || []).find(function (b) { return b.id === catId; });
+if (!book) return;
+
+document.getElementById("bookTitle").value = book.title || "";
+document.getElementById("bookAuthorCode").value = book.author
+? book.author + " / " + copyCode
+: copyCode;
+if (Number(book.pageCount) > 0) {
+document.getElementById("bookPageCount").value = String(book.pageCount);
+}
+showToast(copyCode + " · " + book.title + " seçildi.");
+}
+
+function updateDueDatePreview() {
+const today = todayISO();
+const loanDateInp = document.getElementById("loanDate");
+loanDateInp.max = today;
+if (loanDateInp.value && loanDateInp.value > today) {
+loanDateInp.value = today;
+}
+const base = loanDateInp.value || today;
+const days = Number(document.getElementById("loanDays").value) || 15;
+const due = addDaysISO(base, days);
+document.getElementById("dueDatePreview").textContent =
+"Son Teslim Tarihi: " + formatDateTR(due) + " (" + days + " gün sonra)";
+}
+
+function saveLoan(e) {
+e.preventDefault();
+const today = todayISO();
+const studentName = document.getElementById("studentName").value.trim();
+const studentClassNo = document.getElementById("studentClassNo").value.trim();
+const bookTitle = document.getElementById("bookTitle").value.trim();
+const authorCode = document.getElementById("bookAuthorCode").value.trim();
+const pageCount = Math.max(0, Number(document.getElementById("bookPageCount").value) || 0);
+const note = document.getElementById("loanNote").value.trim();
+let loanDate = document.getElementById("loanDate").value || today;
+if (loanDate > today) loanDate = today;
+const days = Number(document.getElementById("loanDays").value) || 15;
+const dueDate = addDaysISO(loanDate, days);
+
+if (!studentName || !studentClassNo || !bookTitle) {
+showToast("Lütfen zorunlu alanları doldurun.");
+return;
+}
+
+let selectedCatalogId = "";
+let selectedCopyCode = "";
+const pickerEl = document.getElementById("catalogCopySelect");
+if (pickerEl && pickerEl.value) {
+const parts = pickerEl.value.split("::");
+selectedCatalogId = parts[0] || "";
+selectedCopyCode = parts[1] || "";
+}
+
+const newLoanId = "loan_" + Date.now();
+state.loans.unshift({
+id: newLoanId,
+studentName: studentName,
+studentClassNo: studentClassNo,
+bookTitle: bookTitle,
+authorCode: authorCode,
+catalogId: selectedCatalogId,
+copyCode: selectedCopyCode,
+pageCount: pageCount,
+note: note,
+loanDate: loanDate,
+dueDate: dueDate,
+returnedDate: "",
+status: "active"
+});
+
+if (selectedCatalogId && selectedCopyCode) {
+syncCatalogCopyStatus(selectedCatalogId, selectedCopyCode, "lent", newLoanId);
+}
+
+saveState();
+document.getElementById("studentName").value = "";
+document.getElementById("studentClassNo").value = "";
+document.getElementById("bookTitle").value = "";
+document.getElementById("bookAuthorCode").value = "";
+document.getElementById("bookPageCount").value = "";
+document.getElementById("loanNote").value = "";
+if (pickerEl) pickerEl.value = "";
+const pickSearchEl = document.getElementById("catalogPickSearch");
+if (pickSearchEl) pickSearchEl.value = "";
+
+showToast("Ödünç kaydı oluşturuldu.");
+setLoanFilter("active", document.querySelector('#loanFilterPills .pill-btn[data-filter="active"]'));
+switchTab("list");
+}
+
+/* ========================================================================
+8. KİTAP LİSTESİ (BARKODSUZ DEMİRBAŞ KATALOĞU & 2026 AQ./AIza GEMINI OCR)
+======================================================================== */
+let pendingCapturedCoverDataUrl = "";
+let activeCameraStream = null;
+
+function generateNextCopyCode() {
+let maxNum = 0;
+(state.catalog || []).forEach(function (book) {
+(book.copies || []).forEach(function (c) {
+const m = String(c.code || "").match(/KTP-(\d+)/i);
+if (m) {
+const n = Number(m[1]) || 0;
+if (n > maxNum) maxNum = n;
+}
+});
+});
+return "KTP-" + String(maxNum + 1).padStart(3, "0");
+}
+
+function compressCoverImageFromSource(imgSource) {
+const targetMaxWidth = 320;
+const srcW = imgSource.videoWidth || imgSource.naturalWidth || imgSource.width || 320;
+const srcH = imgSource.videoHeight || imgSource.naturalHeight || imgSource.height || 440;
+const scale = srcW > targetMaxWidth ? (targetMaxWidth / srcW) : 1;
+const outW = Math.max(1, Math.round(srcW * scale));
+const outH = Math.max(1, Math.round(srcH * scale));
+
+const canvas = document.createElement("canvas");
+canvas.width = outW;
+canvas.height = outH;
+const ctx = canvas.getContext("2d");
+ctx.drawImage(imgSource, 0, 0, outW, outH);
+return canvas.toDataURL("image/jpeg", 0.72);
+}
+
+function setOcrBanner(text, variant) {
+const statusEl = document.getElementById("coverOcrStatus");
+if (!statusEl) return;
+statusEl.className = "ocr-status-banner" + (variant ? " " + variant : "");
+statusEl.textContent = text;
+}
+
+function triggerCoverPhotoInput() {
+closeLiveCamera();
+const inp = document.getElementById("coverPhotoInput");
+if (inp) {
+inp.value = "";
+inp.click();
+}
+}
+
+function openManualCatalogForm() {
+closeLiveCamera();
+pendingCapturedCoverDataUrl = "";
+showCatalogAddFormWithPreview("", "Kapak fotoğrafı olmadan kitap bilgisi girebilirsiniz.", "");
+}
+
+function toggleBulkCatalogBox() {
+const box = document.getElementById("bulkCatalogBox");
+if (!box) return;
+box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+function showCatalogAddFormWithPreview(dataUrl, statusText, statusVariant) {
+const wrap = document.getElementById("catalogAddFormWrap");
+const imgEl = document.getElementById("capturedCoverPreview");
+const phEl = document.getElementById("noCoverPlaceholder");
+const retryBtn = document.getElementById("btnRetryCoverOcr");
+const rmBtn = document.getElementById("btnRemoveCapturedCover");
+
+if (wrap) wrap.style.display = "block";
+setOcrBanner(statusText || "", statusVariant || "");
+
+if (dataUrl) {
+imgEl.src = dataUrl;
+imgEl.style.display = "block";
+phEl.style.display = "none";
+if (retryBtn) retryBtn.style.display = "block";
+rmBtn.style.display = "block";
+} else {
+imgEl.src = "";
+imgEl.style.display = "none";
+phEl.style.display = "flex";
+if (retryBtn) retryBtn.style.display = "none";
+rmBtn.style.display = "none";
+}
+}
+
+function clearCapturedCover() {
+pendingCapturedCoverDataUrl = "";
+showCatalogAddFormWithPreview("", "Kapak fotoğrafı kaldırıldı.", "");
+}
+
+function closeCatalogAddForm() {
+pendingCapturedCoverDataUrl = "";
+const wrap = document.getElementById("catalogAddFormWrap");
+if (wrap) wrap.style.display = "none";
+document.getElementById("catBookTitle").value = "";
+document.getElementById("catBookAuthor").value = "";
+document.getElementById("catBookPages").value = "";
+document.getElementById("catBookCopies").value = "1";
+}
+
+function retryCoverAnalysis() {
+if (!pendingCapturedCoverDataUrl) {
+showToast("Tekrar okutulacak bir kapak fotoğrafı bulunmuyor.");
+return;
+}
+const img = new Image();
+img.onload = function () {
+analyzeCoverPhoto(pendingCapturedCoverDataUrl, img);
+};
+img.src = pendingCapturedCoverDataUrl;
+}
+
+function handleCoverFileSelected(event) {
+const file = event.target && event.target.files && event.target.files[0];
+if (!file) return;
+
+const reader = new FileReader();
+reader.onload = function (e) {
+const img = new Image();
+img.onload = function () {
+const compressedDataUrl = compressCoverImageFromSource(img);
+pendingCapturedCoverDataUrl = compressedDataUrl;
+showCatalogAddFormWithPreview(compressedDataUrl, "Kapak fotoğrafı hazırlandı, kitap bilgileri okunuyor...", "");
+analyzeCoverPhoto(compressedDataUrl, img);
+};
+img.onerror = function () {
+showToast("Fotoğraf işlenemedi, lütfen tekrar deneyin.");
+};
+img.src = String(e.target.result || "");
+};
+reader.readAsDataURL(file);
+}
+
+function openLiveCamera() {
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+showToast("Canlı kamera desteklenmiyor; fotoğraf seçici açılıyor.");
+triggerCoverPhotoInput();
+return;
+}
+const box = document.getElementById("liveCameraBox");
+const video = document.getElementById("liveCameraVideo");
+box.style.display = "block";
+
+navigator.mediaDevices.getUserMedia({
+video: { facingMode: { ideal: "environment" } },
+audio: false
+}).then(function (stream) {
+activeCameraStream = stream;
+video.srcObject = stream;
+}).catch(function () {
+box.style.display = "none";
+showToast("Kamera izni alınamadı; fotoğraf seçici açılıyor.");
+triggerCoverPhotoInput();
+});
+}
+
+function closeLiveCamera() {
+if (activeCameraStream) {
+try {
+activeCameraStream.getTracks().forEach(function (t) { t.stop(); });
+} catch (e) {}
+activeCameraStream = null;
+}
+const box = document.getElementById("liveCameraBox");
+const video = document.getElementById("liveCameraVideo");
+if (video) video.srcObject = null;
+if (box) box.style.display = "none";
+}
+
+function snapLiveCameraPhoto() {
+const video = document.getElementById("liveCameraVideo");
+if (!video || !video.videoWidth) {
+showToast("Kamera görüntüsü henüz hazır değil.");
+return;
+}
+const compressedDataUrl = compressCoverImageFromSource(video);
+pendingCapturedCoverDataUrl = compressedDataUrl;
+closeLiveCamera();
+showCatalogAddFormWithPreview(compressedDataUrl, "Kapak fotoğrafı çekildi, bilgiler okunuyor...", "");
+
+const img = new Image();
+img.onload = function () {
+analyzeCoverPhoto(compressedDataUrl, img);
+};
+img.src = compressedDataUrl;
+}
+
+function analyzeCoverPhoto(jpegDataUrl, imgElement) {
+// 2026 Güncellemesi: Hem yeni AQ. ön ekli hem de eski AIza... anahtarları boşlukları temizlenerek kabul edilir
+const apiKey = String(state.settings.geminiApiKey || "").replace(/\s+/g, "").trim();
+
+if (apiKey) {
+setOcrBanner("Kapak fotoğrafı Gemini Vision ile okunuyor...", "");
+const base64Body = jpegDataUrl.split(",")[1] || "";
+const candidateModels = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.0-flash", "gemini-2.5-flash-lite"];
+const requestBody = JSON.stringify({
+contents: [{
+parts: [
+{
+text: 'Bu kitap kapağı fotoğrafındaki kitap adını (title), yazar adını (author) ve kapakta görünüyorsa sayfa sayısını (pages) çıkar. Sadece şu JSON formatında yanıt ver: {"title": "...", "author": "...", "pages": 0}'
+},
+{
+inline_data: {
+mime_type: "image/jpeg",
+data: base64Body
+}
+}
+ ]
+}],
+generationConfig: {
+responseMimeType: "application/json"
+}
+});
+
+function waitMs(ms) {
+return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+function callGeminiModel(modelName, useQueryParamFallback) {
+const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent";
+const url = useQueryParamFallback
+? (baseUrl + "?key=" + encodeURIComponent(apiKey))
+: baseUrl;
+const headers = { "Content-Type": "application/json" };
+if (!useQueryParamFallback) {
+headers["x-goog-api-key"] = apiKey;
+}
+return fetch(url, {
+method: "POST",
+headers: headers,
+body: requestBody
+}).then(function (res) {
+return res.json().then(function (json) {
+return { ok: res.ok, status: res.status, json: json };
+});
+});
+}
+
+function tryModelsSequentially(index, attemptForModel) {
+const modelName = candidateModels[index];
+if (index > 0 || attemptForModel > 1) {
+setOcrBanner("Yoğunluk nedeniyle alternatif model deneniyor (" + modelName + ", deneme " + attemptForModel + ")...", "");
+}
+
+return callGeminiModel(modelName, false)
+.then(function (result) {
+if (!result.ok && (result.status === 400 || result.status === 401 || result.status === 403)) {
+return callGeminiModel(modelName, true);
+}
+return result;
+})
+.then(function (result) {
+if (result.ok) return result;
+
+const errMsg = (result.json && result.json.error && result.json.error.message) || "";
+const isHighDemand = result.status === 503 || result.status === 429 ||
+/high demand|overloaded|temporarily unavailable|try again later|rate limit|quota/i.test(errMsg);
+const isModelUnavailable = result.status === 404 ||
+/no longer available|not found|not supported for generateContent/i.test(errMsg);
+
+// Geçici yoğunlukta aynı model için kısa bekleme sonrası 1 tekrar daha yap, ardından sonraki modele geç
+if (isHighDemand && attemptForModel < 2) {
+return waitMs(1400).then(function () {
+return tryModelsSequentially(index, attemptForModel + 1);
+});
+}
+
+if ((isHighDemand || isModelUnavailable) && index + 1 < candidateModels.length) {
+return waitMs(450).then(function () {
+return tryModelsSequentially(index + 1, 1);
+});
+}
+
+return result;
+});
+}
+
+tryModelsSequentially(0, 1)
+.then(function (result) {
+if (!result.ok) {
+const apiErrMsg = (result.json && result.json.error && result.json.error.message)
+? result.json.error.message
+: ("HTTP " + result.status);
+let extraHint = "";
+if (/API_KEY_INVALID|API key not valid|PERMISSION_DENIED|restricted|blocked/i.test(apiErrMsg)) {
+extraHint = " (Google Cloud Console -> APIs & Services -> Credentials bölümünden anahtarın 'Generative Language API' izninin açık olduğunu kontrol edin.)";
+}
+setOcrBanner("Gemini API Hatası: " + apiErrMsg + extraHint + " — Bilgileri aşağıya elle yazabilirsiniz.", "err");
+return;
+}
+
+const rawText = result.json && result.json.candidates && result.json.candidates[0] &&
+result.json.candidates[0].content && result.json.candidates[0].content.parts &&
+result.json.candidates[0].content.parts[0] && result.json.candidates[0].content.parts[0].text;
+
+if (!rawText) {
+setOcrBanner("Kapaktan metin döndürülemedi; kitap adı ve yazarı elle yazıp kaydedin.", "err");
+return;
+}
+
+const cleanedJson = String(rawText).replace(/^json\s*/i, "").replace(/\s*$`/i, "").trim();
+const parsed = JSON.parse(cleanedJson);
+const titleVal = String(parsed.title || "").trim();
+const authorVal = String(parsed.author || "").trim();
+const pagesVal = Number(parsed.pages || parsed.pageCount) || 0;
+
+if (titleVal) document.getElementById("catBookTitle").value = titleVal;
+if (authorVal) document.getElementById("catBookAuthor").value = authorVal;
+if (pagesVal > 0) document.getElementById("catBookPages").value = String(pagesVal);
+
+if (titleVal || authorVal) {
+setOcrBanner("Kapak bilgileri otomatik dolduruldu; kontrol edip 'Kitap Listesine Ekle'ye basın.", "ok");
+showToast("Kapak bilgileri otomatik dolduruldu.");
+} else {
+setOcrBanner("Kapak net okunamadı; kitap adı ve yazarı aşağıya yazıp kaydedin.", "err");
+}
+})
+.catch(function (err) {
+const msg = err && err.message ? err.message : "Ağ veya CORS bağlantısı engellendi";
+setOcrBanner("Kapak okuma bağlantısı kurulamadı (" + msg + "). İnternet bağlantısını kontrol edin veya bilgileri elle yazın.", "err");
+});
+return;
+}
+
+if (typeof window.TextDetector === "function" && imgElement) {
+try {
+const detector = new window.TextDetector();
+detector.detect(imgElement).then(function (blocks) {
+const lines = (blocks || []).map(function (b) { return String(b.rawValue || "").trim(); }).filter(Boolean);
+if (lines.length > 0) {
+document.getElementById("catBookTitle").value = lines[0];
+if (lines.length > 1) {
+document.getElementById("catBookAuthor").value = lines.slice(1, 3).join(" ");
+}
+setOcrBanner("Cihaz içi okuyucu kapaktaki yazıları algıladı; düzenleyip kaydedebilirsiniz.", "ok");
+} else {
+setOcrBanner("Kapak fotoğrafı eklendi. Otomatik okuma için Ayarlar'dan Gemini API anahtarı girebilir veya bilgileri elle yazabilirsiniz.", "");
+}
+}).catch(function () {
+setOcrBanner("Kapak fotoğrafı eklendi; kitap adı ve yazarı yazıp kaydedin.", "");
+});
+return;
+} catch (e) {}
+}
+
+setOcrBanner("Kapak fotoğrafı eklendi. Otomatik okuma için Ayarlar'dan Gemini API anahtarı girebilir veya bilgileri elle yazabilirsiniz.", "");
+}
+
+function saveCatalogBook() {
+const title = document.getElementById("catBookTitle").value.trim();
+const author = document.getElementById("catBookAuthor").value.trim();
+const pageCount = Math.max(0, Number(document.getElementById("catBookPages").value) || 0);
+const copyCount = Math.min(100, Math.max(1, Number(document.getElementById("catBookCopies").value) || 1));
+
+if (!title) {
+showToast("Lütfen kitap adını girin.");
+return;
+}
+
+const existing = (state.catalog || []).find(function (b) {
+return b.title.toLocaleLowerCase("tr-TR") === title.toLocaleLowerCase("tr-TR") &&
+String(b.author || "").toLocaleLowerCase("tr-TR") === author.toLocaleLowerCase("tr-TR");
+});
+
+if (existing) {
+if (pendingCapturedCoverDataUrl) existing.coverDataUrl = pendingCapturedCoverDataUrl;
+if (pageCount > 0 && !existing.pageCount) existing.pageCount = pageCount;
+for (let i = 0; i < copyCount; i++) {
+existing.copies.push({ code: generateNextCopyCode(), status: "available", loanId: "" });
+}
+saveState();
+closeCatalogAddForm();
+renderCatalogList();
+showToast("Mevcut kitaba +" + copyCount + " yeni nüsha eklendi.");
+return;
+}
+
+const newBook = {
+id: "cat_" + Date.now(),
+title: title,
+author: author,
+pageCount: pageCount,
+coverDataUrl: pendingCapturedCoverDataUrl || "",
+copies: []
+};
+state.catalog.unshift(newBook);
+
+for (let i = 0; i < copyCount; i++) {
+newBook.copies.push({ code: generateNextCopyCode(), status: "available", loanId: "" });
+}
+
+saveState();
+closeCatalogAddForm();
+renderCatalogList();
+showToast('"' + title + '" (' + copyCount + " nüsha) kitap listesine eklendi.");
+}
+
+function addSingleCopyToCatalog(catalogId) {
+const book = (state.catalog || []).find(function (b) { return b.id === catalogId; });
+if (!book) return;
+const newCode = generateNextCopyCode();
+book.copies.push({ code: newCode, status: "available", loanId: "" });
+saveState();
+renderCatalogList();
+showToast(book.title + " için " + newCode + " nüshası eklendi.");
+}
+
+function removeLastAvailableCopy(catalogId) {
+const book = (state.catalog || []).find(function (b) { return b.id === catalogId; });
+if (!book) return;
+const reversed = book.copies.slice().reverse();
+const revIdx = reversed.findIndex(function (c) { return c.status === "available"; });
+if (revIdx === -1) {
+showToast("Öğrencide ödünç olan nüsha iade alınmadan silinemez.");
+return;
+}
+const realIdx = book.copies.length - 1 - revIdx;
+const removed = book.copies.splice(realIdx, 1)[0];
+if (book.copies.length === 0) {
+state.catalog = state.catalog.filter(function (b) { return b.id !== catalogId; });
+}
+saveState();
+renderCatalogList();
+showToast(removed.code + " nüshası listeden çıkarıldı.");
+}
+
+function quickLendFromCatalog(catalogId, copyCode) {
+switchTab("new");
+const sel = document.getElementById("catalogCopySelect");
+if (sel) {
+sel.value = catalogId + "::" + copyCode;
+onCatalogCopyPicked();
+}
+}
+
+function importBulkCatalogText() {
+const raw = (document.getElementById("bulkCatalogInput").value || "").trim();
+if (!raw) {
+showToast("Lütfen en az bir satır kitap bilgisi yazın.");
+return;
+}
+
+const lines = raw.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+let addedBooks = 0;
+let addedCopies = 0;
+
+lines.forEach(function (line, idx) {
+const parts = line.split(/\s*[-–|]\s*/);
+const title = (parts[0] || "").trim();
+if (!title) return;
+const author = (parts[1] || "").trim();
+const countRaw = Number(parts[2]);
+const count = countRaw >= 1 && countRaw <= 100 ? Math.round(countRaw) : 1;
+
+let book = (state.catalog || []).find(function (b) {
+return b.title.toLocaleLowerCase("tr-TR") === title.toLocaleLowerCase("tr-TR") &&
+String(b.author || "").toLocaleLowerCase("tr-TR") === author.toLocaleLowerCase("tr-TR");
+});
+
+if (!book) {
+book = {
+id: "cat_" + Date.now() + "_" + idx,
+title: title,
+author: author,
+pageCount: 0,
+coverDataUrl: "",
+copies: []
+};
+state.catalog.unshift(book);
+addedBooks++;
+}
+
+for (let c = 0; c < count; c++) {
+book.copies.push({ code: generateNextCopyCode(), status: "available", loanId: "" });
+addedCopies++;
+}
+});
+
+saveState();
+document.getElementById("bulkCatalogInput").value = "";
+document.getElementById("bulkCatalogBox").style.display = "none";
+renderCatalogList();
+showToast(addedBooks + " eser (" + addedCopies + " nüsha) listeye eklendi.");
+}
+
+function renderCatalogList() {
+const catalog = state.catalog || [];
+let totalCopies = 0;
+let shelfCopies = 0;
+let lentCopies = 0;
+
+catalog.forEach(function (b) {
+(b.copies || []).forEach(function (c) {
+totalCopies++;
+if (c.status === "available") shelfCopies++;
+else lentCopies++;
+});
+});
+
+document.getElementById("catStatTitles").textContent = catalog.length;
+document.getElementById("catStatTotalCopies").textContent = totalCopies;
+document.getElementById("catStatShelfCopies").textContent = shelfCopies;
+document.getElementById("catStatLentCopies").textContent = lentCopies;
+
+const summaryLineEl = document.getElementById("catalogSummaryLine");
+if (summaryLineEl) {
+summaryLineEl.textContent = "Toplam: " + totalCopies + " · Rafta: " + shelfCopies + " · Öğrencide: " + lentCopies;
+}
+
+const q = (document.getElementById("catalogSearchInput").value || "").trim().toLowerCase();
+const filter = document.getElementById("catalogAvailabilityFilter").value || "all";
+
+const filtered = catalog.filter(function (book) {
+const availCount = (book.copies || []).filter(function (c) { return c.status === "available"; }).length;
+if (filter === "available" && availCount === 0) return false;
+if (filter === "none_left" && availCount > 0) return false;
+
+if (!q) return true;
+const codes = (book.copies || []).map(function (c) { return c.code; }).join(" ");
+const hay = (book.title + " " + (book.author || "") + " " + codes).toLowerCase();
+return hay.indexOf(q) !== -1;
+});
+
+const container = document.getElementById("catalogListContainer");
+if (!filtered.length) {
+container.innerHTML = '<div class="empty-msg">Kriterlere uygun kayıtlı kitap bulunamadı.</div>';
+return;
+}
+
+container.innerHTML = filtered.map(function (book) {
+const copies = book.copies || [];
+const shelfCount = copies.filter(function (c) { return c.status === "available"; }).length;
+const lentCount = copies.length - shelfCount;
+const firstAvail = copies.find(function (c) { return c.status === "available"; });
+
+const thumbHtml = book.coverDataUrl
+? '<img class="book-thumb" src="' + book.coverDataUrl + '" alt="' + escapeAttr(book.title) + '" />'
+: '<div class="book-thumb-placeholder">Kapak<br/>Yok</div>';
+
+const chipsHtml = copies.map(function (c) {
+const isShelf = c.status === "available";
+let holderLabel = "Ödünçte";
+if (!isShelf) {
+const activeLoan = (state.loans || []).find(function (ln) {
+return ln.status !== "returned" &&
+(ln.id === c.loanId || (ln.catalogId === book.id && ln.copyCode === c.code));
+});
+if (activeLoan && activeLoan.studentName) {
+holderLabel = "Öğrencide (" + activeLoan.studentName + ")";
+}
+}
+return '<span class="copy-chip ' + (isShelf ? "shelf" : "lent") + '">' +
+escapeHtml(c.code) + ": " + (isShelf ? "Rafta" : escapeHtml(holderLabel)) +
+"</span>";
+}).join("");
+
+const lendBtn = firstAvail
+? '<button type="button" class="btn btn-primary" style="padding:6px 11px; font-size:0.8rem;" onclick="quickLendFromCatalog('' + escapeAttr(book.id) + '', '' + escapeAttr(firstAvail.code) + '')">Ödünç Ver (' + escapeHtml(firstAvail.code) + ")</button>"
+: "";
+
+return (
+'<div class="catalog-card">' +
+thumbHtml +
+'<div style="flex:1; min-width:0;">' +
+'<div style="font-weight:800; font-size:0.98rem; color:#0f172a;">' + escapeHtml(book.title) + "</div>" +
+'<div style="font-size:0.82rem; color:var(--muted); margin-top:2px;">' +
+(book.author ? "Yazar: <strong>" + escapeHtml(book.author) + "</strong>" : "Yazar belirtilmemiş") +
+(Number(book.pageCount) > 0 ? " · " + Number(book.pageCount) + " sf." : "") +
+"</div>" +
+'<div class="book-count-bar">' +
+'<span class="count-pill">Toplam: ' + copies.length + " adet</span>" +
+'<span class="count-pill shelf">Rafta: ' + shelfCount + "</span>" +
+'<span class="count-pill lent">Öğrencide: ' + lentCount + "</span>" +
+"</div>" +
+'<div class="copy-badges">' + chipsHtml + "</div>" +
+'<div class="loan-actions" style="margin-top:9px;">' +
+lendBtn +
+'<button type="button" class="btn btn-light" style="padding:6px 10px; font-size:0.8rem;" onclick="addSingleCopyToCatalog('' + escapeAttr(book.id) + '')">+1 Nüsha Ekle</button>' +
+'<button type="button" class="btn btn-bad" style="padding:6px 10px; font-size:0.8rem;" onclick="removeLastAvailableCopy('' + escapeAttr(book.id) + '')">Sil</button>' +
+"</div>" +
+"</div>" +
+"</div>"
+);
+}).join("");
+
+const printBox = document.getElementById("catalogPrintPreviewBox");
+if (printBox && printBox.classList.contains("open")) {
+updateCatalogPrintPreview();
+}
+}
+
+/* ========================================================================
+9. A4 ÇIKTI BAŞLIK / İMZA BLOKLARI, İNDİRME VE KOPYALAMA YEDEKLERİ
+======================================================================== */
+function getSchoolOfficialTitle() {
+const raw = (state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu").trim();
+return raw.replace(/\s+Kütüphanesi`$/i, "").trim() || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu";
+}
+
+function buildOfficialSignatureBlockHtml() {
+const librarian = (state.settings.librarianName || "Fevzi SALDIR").trim();
+const principal = (state.settings.principalName || "Ensar GEZEN").trim();
+return (
+'<div class="official-sig-grid">' +
+'<div class="official-sig-box">' +
+'<div class="official-sig-role">Kütüphane Sorumlusu</div>' +
+'<div class="official-sig-name">' + escapeHtml(librarian) + "</div>" +
+'<div class="official-sig-title">Türkçe Öğretmeni</div>' +
+'<div class="official-sig-line">İmza</div>' +
+"</div>" +
+'<div class="official-sig-box">' +
+'<div class="official-sig-role">Okul Müdürü</div>' +
+'<div class="official-sig-name">' + escapeHtml(principal) + "</div>" +
+'<div class="official-sig-title">Okul Müdürü</div>' +
+'<div class="official-sig-line">İmza / Mühür</div>' +
+"</div>" +
+"</div>"
+);
+}
+
+function updateCatalogPrintPreview() {
+const container = document.getElementById("catalogPrintPreviewContent");
+if (!container) return;
+const scopeEl = document.getElementById("catalogPrintScopeFilter");
+const scope = scopeEl ? scopeEl.value : "all";
+const schoolTitle = state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const activeYearLabel = formatAcademicYearLabel(getAcademicYearStartFromISO(todayISO())) + " Eğitim-Öğretim Yılı";
+
+let scopeLabel = "Tüm Kitaplar";
+if (scope === "available") scopeLabel = "Sadece Rafta Olanlar";
+else if (scope === "lent") scopeLabel = "Sadece Öğrencide Olanlar";
+
+const catalog = state.catalog || [];
+const rows = [];
+let sumTotal = 0;
+let sumShelf = 0;
+let sumLent = 0;
+
+catalog.forEach(function (book) {
+const copies = book.copies || [];
+const shelfCopies = copies.filter(function (c) { return c.status === "available"; });
+const lentCopies = copies.filter(function (c) { return c.status !== "available"; });
+
+if (scope === "available" && shelfCopies.length === 0) return;
+if (scope === "lent" && lentCopies.length === 0) return;
+
+sumTotal += copies.length;
+sumShelf += shelfCopies.length;
+sumLent += lentCopies.length;
+
+const codesText = copies.map(function (c) { return c.code; }).join(", ") || "-";
+const holdersList = lentCopies.map(function (c) {
+const activeLoan = (state.loans || []).find(function (ln) {
+return ln.status !== "returned" &&
+(ln.id === c.loanId || (ln.catalogId === book.id && ln.copyCode === c.code));
+});
+const studentPart = activeLoan && activeLoan.studentName
+? activeLoan.studentName + (activeLoan.studentClassNo ? " (" + activeLoan.studentClassNo + ")" : "")
+: "Ödünçte";
+return c.code + ": " + studentPart;
+});
+
+rows.push(
+"<tr>" +
+'<td style="font-weight:700; white-space:nowrap;">' + escapeHtml(codesText) + "</td>" +
+'<td style="font-weight:700;">' + escapeHtml(book.title) + "</td>" +
+"<td>" + escapeHtml(book.author || "-") + "</td>" +
+'<td style="text-align:center;">' + (Number(book.pageCount) > 0 ? Number(book.pageCount) : "-") + "</td>" +
+'<td style="text-align:center; font-weight:800;">' + copies.length + "</td>" +
+'<td style="text-align:center; color:#15803d; font-weight:700;">' + shelfCopies.length + "</td>" +
+'<td style="text-align:center; color:#b45309; font-weight:700;">' + lentCopies.length + "</td>" +
+'<td style="font-size:0.78rem;">' + (holdersList.length ? escapeHtml(holdersList.join(" · ")) : "Tamamı rafta") + "</td>" +
+"</tr>"
+);
+});
+
+if (!rows.length) {
+container.innerHTML = '<div class="empty-msg">Seçili filtre (' + escapeHtml(scopeLabel) + ") için yazdırılacak kitap bulunamadı.</div>";
+return;
+}
+
+container.innerHTML =
+'<div style="text-align:center; margin-bottom:10px;">' +
+'<div style="font-size:1.05rem; font-weight:800; color:#0f172a;">' + escapeHtml(schoolTitle) + "</div>" +
+'<div style="font-size:0.86rem; font-weight:700; color:#334155; margin-top:2px;">' + escapeHtml(activeYearLabel) + "</div>" +
+'<div style="font-size:0.9rem; font-weight:800; color:#0369a1; margin-top:3px;">KÜTÜPHANE KİTAP ENVANTER LİSTESİ (' + escapeHtml(scopeLabel) + ")</div>" +
+'<div style="font-size:0.76rem; color:#475569; margin-top:3px;">' +
+"Düzenleme Tarihi: " + formatDateTR(todayISO()) + " · Listelenen Eser: <strong>" + rows.length + "</strong> · Toplam Nüsha: <strong>" + sumTotal + "</strong> (Rafta: <strong>" + sumShelf + "</strong>, Öğrencide: <strong>" + sumLent + "</strong>)" +
+"</div>" +
+"</div>" +
+'<div style="overflow-x:auto;">' +
+'<table class="poster-table">' +
+"<thead><tr>" +
+"<th>Demirbaş No</th><th>Kitap Adı</th><th>Yazar</th>" +
+'<th style="text-align:center;">Sayfa</th>' +
+'<th style="text-align:center;">Toplam</th>' +
+'<th style="text-align:center;">Rafta</th>' +
+'<th style="text-align:center;">Öğrencide</th>' +
+"<th>Kimde / Durum</th>" +
+"</tr></thead>" +
+"<tbody>" + rows.join("") + "</tbody>" +
+"</table>" +
+"</div>" +
+buildOfficialSignatureBlockHtml();
+}
+
+function toggleCatalogPrintPreview() {
+const box = document.getElementById("catalogPrintPreviewBox");
+if (!box) return;
+updateCatalogPrintPreview();
+box.classList.toggle("open");
+if (box.classList.contains("open")) {
+box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+}
+
+function buildStandaloneA4Document(pageTitle, innerBodyHtml) {
+return (
+"<!DOCTYPE html>\n" +
+'<html lang="tr">\n<head>\n<meta charset="UTF-8" />\n' +
+"<title>" + escapeHtml(pageTitle) + "</title>\n" +
+"<style>\n" +
+" body { font-family: Arial, sans-serif; padding: 24px; color: #0f172a; }\n" +
+" .poster-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }\n" +
+" .poster-table th, .poster-table td { border: 1px solid #334155; padding: 7px 9px; text-align: left; }\n" +
+" .poster-table th { background: #e2e8f0; font-weight: 700; }\n" +
+" .official-sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 34px; text-align: center; font-size: 13px; page-break-inside: avoid; }\n" +
+" .official-sig-role { font-weight: 700; margin-bottom: 4px; }\n" +
+" .official-sig-name { font-weight: 700; }\n" +
+" .official-sig-title { font-size: 12px; color: #475569; }\n" +
+" .official-sig-line { margin-top: 36px; font-size: 11px; color: #64748b; }\n" +
+" @media print { body { padding: 8px; } }\n" +
+"</style>\n</head>\n" +
+'<body onload="window.print()">\n' +
+innerBodyHtml + "\n" +
+"</body>\n</html>"
+);
+}
+
+function downloadCatalogPrintHtml() {
+updateCatalogPrintPreview();
+const contentEl = document.getElementById("catalogPrintPreviewContent");
+if (!contentEl) return;
+const schoolTitle = getSchoolOfficialTitle();
+const docHtml = buildStandaloneA4Document(schoolTitle + " - Kitap Envanter Listesi", contentEl.innerHTML);
+
+try {
+const blob = new Blob([docHtml], { type: "text/html;charset=utf-8" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = "kutuphane-kitap-listesi-" + todayISO() + ".html";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+showToast("İndirme başlatıldı. Önizleme penceresindeyseniz 'Metni / Kodu Kopyala' kutusunu da kullanabilirsiniz.");
+} catch (e) {
+showToast("İndirme engellendi; yedek kopyalama kutusu açıldı.");
+}
+const fb = document.getElementById("catalogFallbackBox");
+if (fb) {
+fb.classList.add("open");
+fillCatalogFallback("text");
+}
+}
+
+function toggleCatalogFallbackCopy() {
+const fb = document.getElementById("catalogFallbackBox");
+if (!fb) return;
+fb.classList.toggle("open");
+if (fb.classList.contains("open")) {
+fillCatalogFallback("text");
+}
+}
+
+function fillCatalogFallback(mode) {
+updateCatalogPrintPreview();
+const ta = document.getElementById("catalogFallbackTextarea");
+const contentEl = document.getElementById("catalogPrintPreviewContent");
+if (!ta || !contentEl) return;
+
+if (mode === "html") {
+ta.value = buildStandaloneA4Document(getSchoolOfficialTitle() + " - Kitap Envanter Listesi", contentEl.innerHTML);
+} else {
+const schoolTitle = state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const activeYearLabel = formatAcademicYearLabel(getAcademicYearStartFromISO(todayISO())) + " Eğitim-Öğretim Yılı";
+const librarian = (state.settings.librarianName || "Fevzi SALDIR").trim();
+const principal = (state.settings.principalName || "Ensar GEZEN").trim();
+const lines = [
+schoolTitle,
+activeYearLabel,
+"KÜTÜPHANE KİTAP ENVANTER LİSTESİ (" + formatDateTR(todayISO()) + ")",
+"--------------------------------------------------"
+ ];
+(state.catalog || []).forEach(function (b, idx) {
+const copies = b.copies || [];
+const shelfCount = copies.filter(function (c) { return c.status === "available"; }).length;
+const lentCount = copies.length - shelfCount;
+const codes = copies.map(function (c) { return c.code; }).join(", ");
+lines.push((idx + 1) + ". " + b.title + (b.author ? " - " + b.author : "") + " [" + codes + "] | Toplam: " + copies.length + ", Rafta: " + shelfCount + ", Öğrencide: " + lentCount);
+});
+lines.push("--------------------------------------------------");
+lines.push("Kütüphane Sorumlusu: " + librarian + " (Türkçe Öğretmeni)");
+lines.push("Okul Müdürü: " + principal);
+ta.value = lines.join("\n");
+}
+}
+
+function copyTextareaElement(textareaId) {
+const ta = document.getElementById(textareaId);
+if (!ta) return;
+ta.focus();
+ta.select();
+try {
+document.execCommand("copy");
+showToast("Metin panoya kopyalandı.");
+} catch (e) {
+showToast("Metin seçildi; cihazınızdan Kopyala'ya basabilirsiniz.");
+}
+}
+
+/* ========================================================================
+10. EN ÇOK OKUYANLAR LİDERLİK TABLOSU, PANO ÇIKTISI & WHATSAPP PAYLAŞIMI
+======================================================================== */
+function computeLeaderboardData() {
+const periodEl = document.getElementById("topPeriodFilter");
+const metricEl = document.getElementById("topMetricFilter");
+const activeStart = getAcademicYearStartFromISO(todayISO());
+const period = periodEl ? periodEl.value : "ay_" + activeStart;
+const metric = metricEl ? metricEl.value : "returned_only";
+
+const today = todayISO();
+const thisMonthPrefix = today.slice(0, 7);
+
+const filteredLoans = (state.loans || []).filter(function (l) {
+if (metric === "returned_only" && l.status !== "returned") return false;
+const refDate = (metric === "returned_only" && l.returnedDate) ? l.returnedDate : (l.loanDate || "");
+if (!refDate) return period === "all";
+
+if (period === "this_month") {
+return refDate.slice(0, 7) === thisMonthPrefix;
+}
+if (period && period.indexOf("ay_") === 0) {
+const targetStart = Number(period.slice(3));
+const startBound = targetStart + "-09-01";
+const endBound = (targetStart + 1) + "-08-31";
+return refDate >= startBound && refDate <= endBound;
+}
+return true;
+});
+
+const studentMap = {};
+const classMap = {};
+
+filteredLoans.forEach(function (l) {
+const sName = String(l.studentName || "").trim();
+const sClassNo = String(l.studentClassNo || "").trim();
+if (!sName) return;
+
+const key = sName.toLocaleLowerCase("tr-TR") + "::" + sClassNo.toLocaleLowerCase("tr-TR");
+if (!studentMap[key]) {
+studentMap[key] = {
+studentName: sName,
+studentClassNo: sClassNo || "-",
+bookCount: 0,
+pageCount: 0,
+books: []
+};
+}
+studentMap[key].bookCount += 1;
+studentMap[key].pageCount += Number(l.pageCount) || 0;
+if (l.bookTitle) studentMap[key].books.push(l.bookTitle);
+
+const classMatch = sClassNo.match(/^([5-8]\s*/\s*[A-Za-zÇĞİÖŞÜçğıöşü])/);
+const classLabel = classMatch
+? classMatch[1].replace(/\s+/g, "").toUpperCase()
+: (sClassNo.split(/[\s-]+/)[0] || "Diğer").toUpperCase();
+
+if (!classMap[classLabel]) {
+classMap[classLabel] = { className: classLabel, bookCount: 0, pageCount: 0 };
+}
+classMap[classLabel].bookCount += 1;
+classMap[classLabel].pageCount += Number(l.pageCount) || 0;
+});
+
+const students = Object.values(studentMap).sort(function (a, b) {
+if (b.bookCount !== a.bookCount) return b.bookCount - a.bookCount;
+if (b.pageCount !== a.pageCount) return b.pageCount - a.pageCount;
+return a.studentName.localeCompare(b.studentName, "tr");
+});
+
+const classes = Object.values(classMap).sort(function (a, b) {
+if (b.bookCount !== a.bookCount) return b.bookCount - a.bookCount;
+return b.pageCount - a.pageCount;
+});
+
+return { students: students, classes: classes };
+}
+
+function renderTopReaders() {
+const data = computeLeaderboardData();
+const students = data.students;
+const classes = data.classes;
+
+const podiumBox = document.getElementById("topPodiumContainer");
+const listBox = document.getElementById("topReadersContainer");
+const classBox = document.getElementById("topClassesContainer");
+const headingEl = document.getElementById("topListHeading");
+
+const periodSel = document.getElementById("topPeriodFilter");
+const periodText = periodSel && periodSel.selectedIndex >= 0
+? periodSel.options[periodSel.selectedIndex].text
+: "";
+if (headingEl) {
+headingEl.textContent = periodText
+? "En Çok Kitap Okuyan Öğrenciler — " + periodText
+: "En Çok Kitap Okuyan Öğrenciler";
+}
+
+if (!students.length) {
+podiumBox.innerHTML = "";
+listBox.innerHTML = '<div class="empty-msg">Seçili dönem ve ölçüt için henüz okuma kaydı bulunamadı.</div>';
+classBox.innerHTML = '<div class="empty-msg">Sınıf dağılımı için kayıt bulunmuyor.</div>';
+const posterBox = document.getElementById("posterPreviewBox");
+if (posterBox && posterBox.classList.contains("open")) {
+updatePosterPreviewContent([]);
+}
+return;
+}
+
+const medals = [
+{ cls: "rank-1", label: "1. Altın Madalya" },
+{ cls: "rank-2", label: "2. Gümüş Madalya" },
+{ cls: "rank-3", label: "3. Bronz Madalya" }
+ ];
+
+podiumBox.innerHTML = '<div class="podium-grid">' + students.slice(0, 3).map(function (st, i) {
+return (
+'<div class="podium-card ' + medals[i].cls + '">' +
+'<div class="medal-badge">' + medals[i].label + "</div>" +
+'<div style="font-weight:800; font-size:0.98rem; color:#0f172a;">' + escapeHtml(st.studentName) + "</div>" +
+'<div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">' + escapeHtml(st.studentClassNo) + "</div>" +
+'<div style="font-weight:800; font-size:1.1rem; color:var(--primary-dark); margin-top:6px;">' +
+st.bookCount + " Kitap" + (st.pageCount > 0 ? " · " + st.pageCount + " sf." : "") +
+"</div>" +
+"</div>"
+);
+}).join("") + "</div>";
+
+const tableRows = students.map(function (st, idx) {
+const rank = idx + 1;
+const uniqueBooks = Array.from(new Set(st.books));
+return (
+"<tr>" +
+'<td style="text-align:center; font-weight:800;">' + rank + "</td>" +
+'<td style="font-weight:700;">' + escapeHtml(st.studentName) + "</td>" +
+"<td>" + escapeHtml(st.studentClassNo) + "</td>" +
+'<td style="text-align:center; font-weight:800; color:#075985;">' + st.bookCount + "</td>" +
+'<td style="text-align:center;">' + (st.pageCount > 0 ? st.pageCount : "-") + "</td>" +
+'<td style="font-size:0.78rem; color:#475569;">' + escapeHtml(uniqueBooks.join(", ")) + "</td>" +
+"</tr>"
+);
+}).join("");
+
+listBox.innerHTML =
+'<div style="overflow-x:auto;">' +
+'<table class="poster-table">' +
+"<thead><tr>" +
+'<th style="width:46px; text-align:center;">Sıra</th>' +
+"<th>Öğrenci Adı Soyadı</th>" +
+"<th>Sınıf / No</th>" +
+'<th style="text-align:center;">Kitap</th>' +
+'<th style="text-align:center;">Sayfa</th>' +
+"<th>Okuduğu Kitaplar</th>" +
+"</tr></thead>" +
+"<tbody>" + tableRows + "</tbody>" +
+"</table>" +
+"</div>";
+
+const maxClassBooks = classes.length ? classes[0].bookCount : 1;
+classBox.innerHTML = classes.map(function (c) {
+const pct = Math.max(8, Math.round((c.bookCount / maxClassBooks) * 100));
+return (
+'<div class="class-bar-wrap">' +
+'<div class="class-bar-head">' +
+"<span>" + escapeHtml(c.className) + " Sınıfı</span>" +
+"<span>" + c.bookCount + " Kitap" + (c.pageCount > 0 ? " (" + c.pageCount + " sayfa)" : "") + "</span>" +
+"</div>" +
+'<div class="class-bar-track">' +
+'<div class="class-bar-fill" style="width:' + pct + '%;"></div>' +
+"</div>" +
+"</div>"
+);
+}).join("");
+
+const posterBox = document.getElementById("posterPreviewBox");
+if (posterBox && posterBox.classList.contains("open")) {
+updatePosterPreviewContent(students);
+}
+}
+
+function buildTopReadersShareText() {
+const students = computeLeaderboardData().students;
+const schoolTitle = state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const periodSel = document.getElementById("topPeriodFilter");
+const periodLabel = periodSel && periodSel.selectedIndex >= 0
+? periodSel.options[periodSel.selectedIndex].text
+: "";
+if (!students.length) return "";
+
+const lines = [
+"" + schoolTitle + "",
+"En Çok Kitap Okuyan Öğrenciler (" + periodLabel + ") — " + formatDateTR(todayISO()),
+""
+ ];
+students.slice(0, 15).forEach(function (st, idx) {
+const pagePart = st.pageCount > 0 ? " (" + st.pageCount + " sayfa)" : "";
+lines.push((idx + 1) + ". " + st.studentName + " (" + st.studentClassNo + ") — " + st.bookCount + " Kitap" + pagePart);
+});
+lines.push("");
+lines.push("Kütüphane Sorumlusu: " + (state.settings.librarianName || "Fevzi SALDIR"));
+return lines.join("\n");
+}
+
+function shareTopReadersWhatsApp() {
+const text = buildTopReadersShareText();
+if (!text) {
+showToast("Paylaşılacak okuma kaydı bulunmuyor.");
+return;
+}
+const waUrl = "https://wa.me/?text=" + encodeURIComponent(text);
+window.open(waUrl, "_blank", "noopener,noreferrer");
+}
+
+function copyTopReadersSummary() {
+const text = buildTopReadersShareText();
+if (!text) {
+showToast("Kopyalanacak okuma kaydı bulunmuyor.");
+return;
+}
+const drawer = document.getElementById("shareDrawer");
+const ta = document.getElementById("shareTextArea");
+ta.value = text;
+drawer.classList.add("open");
+ta.focus();
+ta.select();
+try {
+document.execCommand("copy");
+showToast("Sıralama metni panoya kopyalandı.");
+} catch (e) {
+showToast("Metin kutusu açıldı; seçip kopyalayabilirsiniz.");
+}
+}
+
+function closeShareDrawer() {
+document.getElementById("shareDrawer").classList.remove("open");
+}
+
+function updatePosterPreviewContent(studentsList) {
+const container = document.getElementById("posterPreviewContent");
+if (!container) return;
+const students = Array.isArray(studentsList) ? studentsList : computeLeaderboardData().students;
+const schoolTitle = state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const periodSel = document.getElementById("topPeriodFilter");
+const periodVal = periodSel ? periodSel.value : "";
+const activeStart = getAcademicYearStartFromISO(todayISO());
+const yearLabel = (periodVal && periodVal.indexOf("ay_") === 0)
+? formatAcademicYearLabel(Number(periodVal.slice(3))) + " Eğitim-Öğretim Yılı"
+: formatAcademicYearLabel(activeStart) + " Eğitim-Öğretim Yılı";
+const periodLabel = periodSel && periodSel.selectedIndex >= 0
+? periodSel.options[periodSel.selectedIndex].text
+: yearLabel;
+
+if (!students.length) {
+container.innerHTML = '<div class="empty-msg">Pano çıktısı oluşturmak için henüz kayıt bulunmuyor.</div>';
+return;
+}
+
+const rows = students.slice(0, 15).map(function (st, idx) {
+return (
+"<tr>" +
+'<td style="font-weight:800; text-align:center;">' + (idx + 1) + "</td>" +
+'<td style="font-weight:700;">' + escapeHtml(st.studentName) + "</td>" +
+"<td>" + escapeHtml(st.studentClassNo) + "</td>" +
+'<td style="font-weight:800; text-align:center;">' + st.bookCount + "</td>" +
+'<td style="text-align:center;">' + (st.pageCount > 0 ? st.pageCount : "-") + "</td>" +
+"</tr>"
+);
+}).join("");
+
+container.innerHTML =
+'<div style="text-align:center; margin-bottom:10px;">' +
+'<div style="font-size:1.05rem; font-weight:800; color:#0f172a;">' + escapeHtml(schoolTitle) + "</div>" +
+'<div style="font-size:0.86rem; font-weight:700; color:#334155; margin-top:2px;">' + escapeHtml(yearLabel) + "</div>" +
+'<div style="font-size:0.9rem; font-weight:800; color:#0369a1; margin-top:3px;">EN ÇOK KİTAP OKUYAN ÖĞRENCİLER LİSTESİ (' + escapeHtml(periodLabel) + ")</div>" +
+'<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">Düzenleme Tarihi: ' + formatDateTR(todayISO()) + "</div>" +
+"</div>" +
+'<table class="poster-table">' +
+"<thead><tr>" +
+'<th style="width:48px; text-align:center;">Sıra</th>' +
+"<th>Öğrenci Adı Soyadı</th>" +
+"<th>Sınıf / No</th>" +
+'<th style="width:78px; text-align:center;">Kitap</th>' +
+'<th style="width:78px; text-align:center;">Sayfa</th>' +
+"</tr></thead>" +
+"<tbody>" + rows + "</tbody>" +
+"</table>" +
+buildOfficialSignatureBlockHtml();
+}
+
+function togglePosterPreview() {
+const box = document.getElementById("posterPreviewBox");
+updatePosterPreviewContent();
+box.classList.toggle("open");
+if (box.classList.contains("open")) {
+box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+}
+
+function triggerNativePrint() {
+try {
+window.print();
+} catch (e) {
+showToast("Önizleme penceresinde yazdırma kısıtlı; 'Metni / Kodu Kopyala' veya Chrome'da açma yöntemini kullanın.");
+}
+}
+
+function downloadPosterHtml() {
+updatePosterPreviewContent();
+const contentEl = document.getElementById("posterPreviewContent");
+if (!contentEl) return;
+const schoolTitle = getSchoolOfficialTitle();
+const docHtml = buildStandaloneA4Document(schoolTitle + " - En Çok Kitap Okuyanlar", contentEl.innerHTML);
+
+try {
+const blob = new Blob([docHtml], { type: "text/html;charset=utf-8" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = "en-cok-okuyanlar-pano-" + todayISO() + ".html";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+showToast("İndirme başlatıldı. Önizleme penceresindeyseniz 'Metni / Kodu Kopyala' kutusunu da kullanabilirsiniz.");
+} catch (e) {
+showToast("İndirme engellendi; yedek kopyalama kutusu açıldı.");
+}
+const fb = document.getElementById("posterFallbackBox");
+if (fb) {
+fb.classList.add("open");
+fillPosterFallback("text");
+}
+}
+
+function togglePosterFallbackCopy() {
+const fb = document.getElementById("posterFallbackBox");
+if (!fb) return;
+fb.classList.toggle("open");
+if (fb.classList.contains("open")) {
+fillPosterFallback("text");
+}
+}
+
+function fillPosterFallback(mode) {
+updatePosterPreviewContent();
+const ta = document.getElementById("posterFallbackTextarea");
+const contentEl = document.getElementById("posterPreviewContent");
+if (!ta || !contentEl) return;
+
+if (mode === "html") {
+ta.value = buildStandaloneA4Document(getSchoolOfficialTitle() + " - En Çok Kitap Okuyanlar", contentEl.innerHTML);
+} else {
+const librarian = (state.settings.librarianName || "Fevzi SALDIR").trim();
+const principal = (state.settings.principalName || "Ensar GEZEN").trim();
+ta.value = buildTopReadersShareText() + "\nOkul Müdürü: " + principal + " | Kütüphane Sorumlusu: " + librarian;
+}
+}
+
+/* ========================================================================
+11. AYARLAR, YENİ EĞİTİM-ÖĞRETİM YILI GEÇİŞİ VE JSON YEDEKLEME
+======================================================================== */
+function populateSettingsForm() {
+document.getElementById("setLibraryName").value =
+state.settings.libraryName || "Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+document.getElementById("setLibrarianName").value = state.settings.librarianName || "Fevzi SALDIR";
+document.getElementById("setPrincipalName").value = state.settings.principalName || "Ensar GEZEN";
+document.getElementById("setDefaultDays").value = String(state.settings.defaultDays || 15);
+document.getElementById("setGeminiApiKey").value = state.settings.geminiApiKey || "";
+
+const activeStart = getAcademicYearStartFromISO(todayISO());
+const activeLabel = formatAcademicYearLabel(activeStart);
+const statusEl = document.getElementById("academicYearStatusBanner");
+if (statusEl) {
+statusEl.textContent = "Takvime Göre Aktif Eğitim-Öğretim Yılı: " + activeLabel + " (1 Eylül " + activeStart + " – 31 Ağustos " + (activeStart + 1) + ")";
+}
+}
+
+function promoteStudentClasses() {
+let updatedCount = 0;
+(state.loans || []).forEach(function (l) {
+const raw = String(l.studentClassNo || "").trim();
+if (!raw || /^mezun/i.test(raw)) return;
+const m = raw.match(/^([5-8])(\s*/\s*[A-Za-zÇĞİÖŞÜçğıöşü].*)$/);
+if (!m) return;
+const grade = Number(m[1]);
+const rest = m[2];
+if (grade >= 5 && grade <= 7) {
+l.studentClassNo = (grade + 1) + rest;
+updatedCount++;
+} else if (grade === 8) {
+l.studentClassNo = "Mezun (" + grade + rest + ")";
+updatedCount++;
+}
+});
+
+if (updatedCount === 0) {
+showToast("Yükseltilecek 5, 6, 7 veya 8. sınıf kaydı bulunamadı.");
+return;
+}
+
+saveState();
+renderLoanList();
+if (document.getElementById("panelTop").classList.contains("active")) {
+renderTopReaders();
+}
+showToast(updatedCount + " kayıtta öğrenci sınıfları bir üst sınıfa (8. sınıflar Mezun) yükseltildi.");
+}
+
+function saveSettings() {
+const libName = document.getElementById("setLibraryName").value.trim() ||
+"Atça Hadıloğlu İbrahim Uzunırmak Ortaokulu Kütüphanesi";
+const librarianName = document.getElementById("setLibrarianName").value.trim() || "Fevzi SALDIR";
+const principalName = document.getElementById("setPrincipalName").value.trim() || "Ensar GEZEN";
+const defaultDays = Number(document.getElementById("setDefaultDays").value) || 15;
+const geminiApiKey = document.getElementById("setGeminiApiKey").value.replace(/\s+/g, "").trim();
+
+state.settings = {
+libraryName: libName,
+librarianName: librarianName,
+principalName: principalName,
+defaultDays: defaultDays,
+geminiApiKey: geminiApiKey
+};
+
+saveState();
+updateHeaderAndStats();
+setupAndroidPwaManifest(libName);
+showToast("Kütüphane ayarları kaydedildi.");
+}
+
+function exportBackup() {
+try {
+const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = "kutuphane-yedek-" + todayISO() + ".json";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+showToast("JSON yedeği indirildi. Kısıtlı önizlemedeyseniz 'JSON Metni Yapıştır / Kopyala' kutusunu da kullanabilirsiniz.");
+} catch (e) {
+showToast("İndirme engellendi; JSON metin kutusu açıldı.");
+}
+const box = document.getElementById("jsonPasteBox");
+if (box) {
+box.classList.add("open");
+document.getElementById("jsonPasteTextarea").value = JSON.stringify(state, null, 2);
+}
+}
+
+function triggerImportBackup() {
+const inp = document.getElementById("backupFileInput");
+if (inp) {
+inp.value = "";
+inp.click();
+}
+}
+
+function applyParsedBackupObject(parsed) {
+if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.loans)) {
+showToast("Geçersiz yedek verisi. Lütfen doğru JSON formatını seçin.");
+return false;
+}
+const def = getDefaultState();
+state = {
+settings: Object.assign({}, def.settings, parsed.settings || {}),
+catalog: Array.isArray(parsed.catalog) ? parsed.catalog : def.catalog,
+loans: parsed.loans
+};
+saveState();
+updateHeaderAndStats();
+setupAndroidPwaManifest(state.settings.libraryName);
+populateTopPeriodOptions(false);
+renderLoanList();
+renderCatalogList();
+populateSettingsForm();
+showToast("Yedek başarıyla geri yüklendi.");
+return true;
+}
+
+function importBackup(event) {
+const file = event.target && event.target.files && event.target.files[0];
+if (!file) return;
+
+const reader = new FileReader();
+reader.onload = function (e) {
+try {
+const parsed = JSON.parse(String(e.target.result || ""));
+applyParsedBackupObject(parsed);
+} catch (err) {
+showToast("Yedek dosyası okunamadı. Geçerli bir JSON dosyası seçin.");
+} finally {
+event.target.value = "";
+}
+};
+reader.onerror = function () {
+showToast("Dosya okuma sırasında hata oluştu.");
+event.target.value = "";
+};
+reader.readAsText(file);
+}
+
+function toggleJsonPasteBox() {
+const box = document.getElementById("jsonPasteBox");
+if (!box) return;
+box.classList.toggle("open");
+if (box.classList.contains("open") && !document.getElementById("jsonPasteTextarea").value) {
+document.getElementById("jsonPasteTextarea").value = JSON.stringify(state, null, 2);
+}
+}
+
+function fillJsonPasteWithCurrent() {
+const ta = document.getElementById("jsonPasteTextarea");
+if (!ta) return;
+ta.value = JSON.stringify(state, null, 2);
+copyTextareaElement("jsonPasteTextarea");
+}
+
+function restoreFromJsonTextarea() {
+const ta = document.getElementById("jsonPasteTextarea");
+if (!ta || !ta.value.trim()) {
+showToast("Lütfen önce JSON yedek metnini yapıştırın.");
+return;
+}
+try {
+const parsed = JSON.parse(ta.value.trim());
+applyParsedBackupObject(parsed);
+} catch (e) {
+showToast("Yapıştırılan metin geçerli bir JSON değil.");
+}
+}
+
+function resetSampleData() {
+state = getDefaultState();
+saveState();
+updateHeaderAndStats();
+setupAndroidPwaManifest(state.settings.libraryName);
+populateTopPeriodOptions(false);
+renderLoanList();
+renderCatalogList();
+populateSettingsForm();
+showToast("Örnek verilere dönüldü.");
+}
+
+function escapeHtml(str) {
+return String(str || "")
+.replace(/&/g, "&")
+.replace(/</g, "<")
+.replace(/>/g, ">")
+.replace(/"/g, """);
+}
+
+function escapeAttr(str) {
+return escapeHtml(str).replace(/'/g, "'");
+}
+
+// Başlangıç Yüklemesi
+const initialToday = todayISO();
+const loanDateInput = document.getElementById("loanDate");
+loanDateInput.value = initialToday;
+loanDateInput.max = initialToday;
+document.getElementById("loanDays").value = String(state.settings.defaultDays || 15);
+setupAndroidPwaManifest(state.settings.libraryName);
+populateTopPeriodOptions(false);
+renderLoanList();
+renderCatalogList();
+updateDueDatePreview();
+</script>
+</body>
+</html>
